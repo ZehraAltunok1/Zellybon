@@ -213,15 +213,37 @@ export function renderGummy({ shape, color, size, face = true }) {
     def.path(g, s);
   };
 
-  // Şekli biraz küçültüp ortala: kontur ve gölge için yer kalsın
-  g.translate(s * 0.05, s * 0.03);
-  g.scale(0.9, 0.9);
+  // Şekli biraz küçültüp ortala: kontur, kalınlık ve gölge için yer kalsın
+  g.translate(s * 0.06, s * 0.015);
+  g.scale(0.88, 0.88);
+  const depth = s * 0.075; // oyuncak gibi kalınlık (yan yüz)
 
-  // 1) Yumuşak gölge
+  // 1) Yumuşak gölge (kalınlığın altında)
   g.save();
-  g.translate(0, s * 0.045);
+  g.translate(s * 0.01, depth + s * 0.035);
   path();
-  g.fillStyle = 'rgba(12, 30, 48, 0.3)';
+  g.fillStyle = 'rgba(12, 30, 48, 0.28)';
+  g.fill(rule);
+  g.restore();
+
+  // 1b) Yan yüz: şekil aşağı doğru çekilir, alta doğru koyulaşır → 3B hissi
+  const steps = 6;
+  for (let k = steps; k >= 1; k--) {
+    g.save();
+    g.translate(0, (depth * k) / steps);
+    path();
+    g.lineJoin = 'round';
+    g.lineWidth = s * 0.075;
+    g.strokeStyle = pal.dark;
+    g.stroke();
+    g.fillStyle = pal.dark;
+    g.fill(rule);
+    g.restore();
+  }
+  g.save();
+  g.translate(0, depth);
+  path();
+  g.fillStyle = 'rgba(0, 0, 0, 0.18)';
   g.fill(rule);
   g.restore();
 
@@ -272,6 +294,15 @@ export function renderGummy({ shape, color, size, face = true }) {
   g.beginPath();
   g.arc((h.x + h.rx * 1.3) * s, (h.y - h.ry * 0.2) * s, 0.018 * s, 0, TAU);
   g.fill();
+
+  // 6b) Kenar ışığı: sol üst kenarda ince parlak hat (plastik/jöle yüzey)
+  g.save();
+  g.translate(s * 0.012, s * 0.016);
+  path();
+  g.lineWidth = s * 0.03;
+  g.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  g.stroke();
+  g.restore();
   g.restore();
 
   // 7) Süsler ve yüz
@@ -280,7 +311,10 @@ export function renderGummy({ shape, color, size, face = true }) {
   return c;
 }
 
-/** Resimdeki şeker küp. */
+/**
+ * Resimdeki şeker küp: yan yüzü görünen 3B blok (tuş gibi).
+ * Üst yüz: açık→ana renk; yan yüz: koyu ton; kenarlarda ışık/gölge pahı.
+ */
 export function renderCube(color, size) {
   const pal = PALETTE[color];
   const s = Math.max(4, Math.ceil(size));
@@ -288,40 +322,58 @@ export function renderCube(color, size) {
   c.width = s;
   c.height = s;
   const g = c.getContext('2d');
-  const inset = s * 0.05;
+  const inset = s * 0.04;
   const w = s - inset * 2;
-  const r = w * 0.24;
-  const rr = () => {
+  const side = w * 0.16;     // yan yüz yüksekliği
+  const top = w - side;       // üst yüz yüksekliği
+  const r = w * 0.2;
+  const rr = (y, h) => {
+    const rad = Math.min(r, h / 2);
     g.beginPath();
-    g.moveTo(inset + r, inset);
-    g.arcTo(inset + w, inset, inset + w, inset + w, r);
-    g.arcTo(inset + w, inset + w, inset, inset + w, r);
-    g.arcTo(inset, inset + w, inset, inset, r);
-    g.arcTo(inset, inset, inset + w, inset, r);
+    g.moveTo(inset + rad, y);
+    g.arcTo(inset + w, y, inset + w, y + h, rad);
+    g.arcTo(inset + w, y + h, inset, y + h, rad);
+    g.arcTo(inset, y + h, inset, y, rad);
+    g.arcTo(inset, y, inset + w, y, rad);
     g.closePath();
   };
-  rr();
-  const grad = g.createLinearGradient(0, inset, 0, inset + w);
+
+  // Yan yüz (alt kısımda görünen kalınlık)
+  rr(inset + side, top);
+  g.fillStyle = pal.dark;
+  g.fill();
+
+  // Üst yüz
+  rr(inset, top);
+  const grad = g.createLinearGradient(0, inset, 0, inset + top);
   grad.addColorStop(0, pal.light);
-  grad.addColorStop(0.35, pal.base);
-  grad.addColorStop(1, pal.dark);
+  grad.addColorStop(0.45, pal.base);
+  grad.addColorStop(1, pal.base);
   g.fillStyle = grad;
   g.fill();
+
   g.save();
-  rr();
+  rr(inset, top);
   g.clip();
-  rr();
-  g.lineWidth = s * 0.14;
-  g.strokeStyle = rgba(pal.dark, 0.35);
+  // pah: üst-sol kenar ışık, alt-sağ kenar gölge
+  g.lineWidth = s * 0.12;
+  g.strokeStyle = rgba(pal.dark, 0.3);
+  rr(inset + s * 0.03, top);
   g.stroke();
-  g.fillStyle = 'rgba(255,255,255,0.45)';
+  g.strokeStyle = 'rgba(255,255,255,0.4)';
+  g.lineWidth = s * 0.06;
+  rr(inset - s * 0.01, top);
+  g.stroke();
+  // parlama
+  g.fillStyle = 'rgba(255,255,255,0.5)';
   g.beginPath();
-  g.ellipse(s * 0.38, s * 0.26, s * 0.2, s * 0.08, -0.2, 0, TAU);
+  g.ellipse(s * 0.36, s * 0.22, s * 0.2, s * 0.07, -0.2, 0, TAU);
   g.fill();
   g.restore();
-  g.lineWidth = Math.max(1, s * 0.04);
+
+  g.lineWidth = Math.max(1, s * 0.035);
   g.strokeStyle = pal.dark;
-  rr();
+  rr(inset, top);
   g.stroke();
   return c;
 }
