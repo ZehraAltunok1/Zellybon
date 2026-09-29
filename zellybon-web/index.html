@@ -79,26 +79,41 @@
       </nav>
 
       <article class="game-card game-card-main">
-        <span class="game-card-tag">Ana oyun</span>
-        <h2>Jöle Atış</h2>
-        <p>Jöleni kaykay yoluna gönder, kendi rengindeki küpleri vursun. Tüm küpleri temizle, resmi ortaya çıkar!</p>
-        <p class="game-card-level" id="home-main-level"></p>
+        <div class="game-art-wrap">
+          <canvas class="game-art" data-art="main" data-action="main-play" aria-hidden="true"></canvas>
+          <span class="game-card-tag">Ana oyun</span>
+        </div>
+        <div class="game-card-head">
+          <h2>Jöle Atış</h2>
+          <p class="game-card-level" id="home-main-level"></p>
+        </div>
+        <p>Jöleleri kaykay yoluna gönder, kendi rengindeki küpleri vursunlar. Resmi ortaya çıkar!</p>
         <p class="chest-line" id="home-chest" hidden></p>
         <button class="btn btn-primary btn-huge" data-action="main-play">OYNA</button>
       </article>
 
       <article class="game-card game-card-nakis">
-        <span class="game-card-tag">Yeni · Can harcamaz</span>
-        <h2>Nakış</h2>
-        <p>Renksiz tabloyu renkli iplerle işle. Soluk renklere bak, <b>en içten</b> başla: yanlış renk yolunu bulamaz!</p>
-        <p class="game-card-level" id="home-nakis-level"></p>
+        <div class="game-art-wrap">
+          <canvas class="game-art" data-art="nakis" data-action="nakis-map" aria-hidden="true"></canvas>
+          <span class="game-card-tag">Can harcamaz</span>
+        </div>
+        <div class="game-card-head">
+          <h2>Nakış</h2>
+          <p class="game-card-level" id="home-nakis-level"></p>
+        </div>
+        <p>Renksiz tabloyu renkli iplerle işle. Soluk renklere bak, <b>en içten</b> başla!</p>
         <button class="btn btn-primary" data-action="nakis-map">Nakış İşle</button>
       </article>
 
       <article class="game-card game-card-side">
-        <span class="game-card-tag">Can &amp; joker kazan</span>
-        <h2>Jöle Patlat</h2>
-        <p>Canın mı bitti? Eşleştirme oyununda puan topla, can ve joker kazan.</p>
+        <div class="game-art-wrap">
+          <canvas class="game-art game-art-short" data-art="match" data-action="hub" aria-hidden="true"></canvas>
+          <span class="game-card-tag">Can &amp; joker kazan</span>
+        </div>
+        <div class="game-card-head">
+          <h2>Jöle Patlat</h2>
+        </div>
+        <p>Canın mı bitti? Şekerleri eşleştir, can ve joker kazan.</p>
         <button class="btn btn-secondary" data-action="hub">Jöle Patlat'a git</button>
       </article>
     </section>

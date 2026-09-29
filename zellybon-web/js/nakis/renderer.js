@@ -26,7 +26,7 @@ function fabric(g, s) {
  * Bükümlü iplik teli: gölge → koyu kenar → ana renk → büküm çizgileri (açık) ve oyukları (koyu).
  * Aynı fonksiyon hem ilmekler hem de ilerleyen ip için kullanılır.
  */
-function strand(g, x1, y1, x2, y2, w, pal, { shadow = true, twistPhase = 0 } = {}) {
+export function strand(g, x1, y1, x2, y2, w, pal, { shadow = true, twistPhase = 0 } = {}) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   const len = Math.hypot(dx, dy) || 1;
@@ -71,7 +71,7 @@ function strand(g, x1, y1, x2, y2, w, pal, { shadow = true, twistPhase = 0 } = {
 }
 
 /** Henüz işlenmemiş hücre: kumaş + olması gereken rengin soluk izi (alt plan) */
-function renderHint(color, size) {
+export function renderHint(color, size) {
   const s = Math.max(4, Math.ceil(size));
   const c = document.createElement('canvas');
   c.width = s;
@@ -88,7 +88,7 @@ function renderHint(color, size) {
 }
 
 /** İşlenmiş hücre: renk almış kumaş üzerinde bükümlü iplikten çarpı işi */
-function renderStitch(color, size) {
+export function renderStitch(color, size) {
   const pal = PALETTE[color];
   const s = Math.max(4, Math.ceil(size));
   const c = document.createElement('canvas');
@@ -108,7 +108,7 @@ function renderStitch(color, size) {
 }
 
 /** İp makarası: ahşap başlıklar arasında sıra sıra sarılı ip ve sarkan ip ucu */
-function renderSpool(color, size) {
+export function renderSpool(color, size) {
   const pal = PALETTE[color];
   const s = Math.max(8, Math.ceil(size));
   const c = document.createElement('canvas');
@@ -174,7 +174,7 @@ function renderSpool(color, size) {
 }
 
 /** Gümüş iğne: (x, y) ucunda, (ux, uy) yönünde */
-function drawNeedle(ctx, x, y, ux, uy, len) {
+export function drawNeedle(ctx, x, y, ux, uy, len) {
   const bx = x - ux * len;
   const by = y - uy * len;
   const grad = ctx.createLinearGradient(bx, by, x, y);

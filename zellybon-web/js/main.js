@@ -19,6 +19,7 @@ import { NAKIS_JOKERS, applyNakisJoker } from './nakis/jokers.js';
 import { renderNakisMap } from './screens/nakisMap.js';
 import { renderChests } from './screens/chests.js';
 import { showDaily } from './screens/daily.js';
+import { startHomeArt, stopHomeArt } from './screens/illustrations.js';
 import { renderHome, currentMainLevelId, currentNakisLevelId } from './screens/home.js';
 import { renderHub, renderLevelMap } from './screens/hub.js';
 import { showQuickResult, showLevelResult } from './screens/result.js';
@@ -42,6 +43,9 @@ function show(name) {
   document.body.dataset.screen = name;
   window.scrollTo(0, 0);
   refreshLives();
+  // Oyun kartı çizimleri sadece ana sayfa açıkken canlanır
+  if (name === 'home') startHomeArt();
+  else stopHomeArt();
 }
 
 function stopGames() {

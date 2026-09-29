@@ -1,5 +1,31 @@
 /* Kısayollar, sandıklar, açılış penceresi, günlük ödüller ve görevler */
 
+/* ---------- Ana sayfa oyun kartı çizimleri ---------- */
+
+.game-art-wrap { position: relative; margin: -6px -4px 2px; }
+
+.game-art {
+  display: block;
+  width: 100%;
+  height: 158px;
+  border-radius: 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 rgba(22, 44, 66, 0.25), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.game-art-short { height: 132px; }
+.game-art-wrap .game-card-tag { position: absolute; bottom: 10px; right: 10px; background: rgba(22, 44, 66, 0.7); }
+
+.game-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.game-card-head .game-card-level { font-size: 0.95rem; }
+
 .shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
 .shortcut {
