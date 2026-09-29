@@ -89,6 +89,11 @@ export const Api = {
     request(`/levels/${levelId}/result`, { method: 'POST', body: { won, score, stars } }),
 
   // Ana oyun (Jöle Atış)
-  mainStart: (levelId) => request('/main/start', { method: 'POST', body: { levelId } }),
+  mainStart: (levelId, boosters = []) =>
+    request('/main/start', { method: 'POST', body: { levelId, boosters } }),
   mainResult: (levelId, won) => request('/main/result', { method: 'POST', body: { levelId, won } }),
+
+  // Dükkân
+  shop: () => request('/shop', { auth: false }),
+  buy: (itemId) => request('/shop/buy', { method: 'POST', body: { itemId } }),
 };

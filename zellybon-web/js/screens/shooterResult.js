@@ -1,8 +1,9 @@
-// Jöle Atış bölüm sonucu: kazanınca ortaya çıkan resim, kaybedince can durumu.
+// Jöle Atış bölüm sonucu: kazanınca ortaya çıkan resim, para ve sandık; kaybedince can durumu.
 
 import { Api } from '../api.js';
-import { getUser, setUser } from '../session.js';
+import { getUser, setUser, renderRewards } from '../session.js';
 import { CUBE_COLORS, MAIN_LEVELS } from '../shooter/levels.js';
+import { CHEST_NAMES } from '../economy.js';
 import { launchConfetti } from './confetti.js';
 
 function drawPicture(canvas, art) {
@@ -20,6 +21,16 @@ function drawPicture(canvas, art) {
   }));
 }
 
+function showChest(chest) {
+  const box = document.getElementById('sr-chest');
+  box.hidden = !chest;
+  if (!chest) return;
+  const info = CHEST_NAMES[chest.tier] ?? { name: chest.name, icon: '🎁' };
+  box.className = `chest chest-${chest.tier}`;
+  document.getElementById('sr-chest-icon').textContent = info.icon;
+  document.getElementById('sr-chest-name').textContent = `${info.name} açıldı!`;
+}
+
 export async function showShooterResult(result) {
   const level = MAIN_LEVELS.find((l) => l.id === result.levelId);
   const title = document.getElementById('sr-title');
@@ -29,6 +40,7 @@ export async function showShooterResult(result) {
   const nextBtn = document.getElementById('sr-next');
   const retryBtn = document.getElementById('sr-retry');
   const earnBtn = document.getElementById('sr-earn');
+  const rewardsEl = document.getElementById('sr-rewards');
   const confetti = document.getElementById('shooter-confetti');
 
   confetti.replaceChildren();
@@ -36,6 +48,8 @@ export async function showShooterResult(result) {
   nextBtn.hidden = true;
   retryBtn.hidden = true;
   earnBtn.hidden = true;
+  renderRewards(rewardsEl, []);
+  showChest(null);
 
   if (result.won) {
     title.textContent = 'Harika! 🎉';
@@ -54,6 +68,8 @@ export async function showShooterResult(result) {
     const res = await Api.mainResult(result.levelId, result.won);
     setUser(res.user);
     statusEl.textContent = '';
+    showChest(res.chest);
+    renderRewards(rewardsEl, res.rewards);
   } catch (err) {
     statusEl.textContent = `Sonuç kaydedilemedi: ${err.message}`;
   }
@@ -62,7 +78,6 @@ export async function showShooterResult(result) {
   const hasLives = user.lives.lives > 0;
   if (result.won) {
     nextBtn.hidden = result.levelId >= MAIN_LEVELS.length;
-    nextBtn.textContent = 'Sonraki Bölüm';
   } else {
     retryBtn.hidden = !hasLives;
     earnBtn.hidden = hasLives;

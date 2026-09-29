@@ -5,8 +5,13 @@ Tek kişilik, renkli jöle oyunları. Rakibin başka oyuncular değil, kendi rek
 ## Oyunlar
 
 **Jöle Atış (ana oyun):** Jölelerini resmin çevresindeki kaykay yoluna gönder. Her jöle kendi rengindeki küpleri vurur. Tüm küpleri temizle, gizli resmi ortaya çıkar. Mermisi kalan jöleler bekleme kutularına iner; kutular taşarsa bölüm kaybedilir.
-- Her bölüm denemesi 1 can harcar, kazanırsan can geri gelir.
-- En fazla 5 can vardır, 30 dakikada 1 can kendiliğinden dolar.
+- 20 bölüm; zorluk simülasyonla ayarlandı ve giderek artar (8. ve 10. bölümler "nefes bölümü").
+- Her bölümün kendi jelibon şekli var: ayıcık, kalp, kola şişesi, yıldız, halka, çilek.
+- **Karakterli jöleler:** Zıplayan (şeritte 2 küp), Roket (2 kat hızlı), Delici (art arda aynı renk küplerin hepsi), Bomba (çevredeki küpler). Bölümler ilerledikçe tanıtılır.
+- **Canlar:** en fazla 5, 5 dakikada 1 dolar. Her deneme 1 can harcar, kazanırsan geri gelir.
+- **Para (🪙):** her yeni bölüm, bölüm numarası arttıkça daha çok para verir.
+- **Sandıklar:** 2, 4, 7, 11, 16. bölümlerde. Seyrekleşir ama değerlenir: Bronz → Gümüş → Altın → Elmas → Efsane.
+- **Dükkân:** paralarla can, güçlendirici (📦 Ekstra Kutu, ⭐ Süper Başlangıç) ve joker alınır.
 
 **Jöle Patlat (destek oyunu):** 8x8 eşleştirme (match-3). Can ve joker kazandırır.
 - **Hızlı Tur:** 60 saniye, Isı Barı ve Şeker Fırtınası. 1.500+ puan +1 can, 3.000+ puan +2 can.

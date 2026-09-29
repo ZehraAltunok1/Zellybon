@@ -1,14 +1,17 @@
+/* Arayüz paleti: js/palette.js'deki jöle renkleriyle aynı aileden.
+   Arka plan gece mavisi → üzüm → pembe şeker; butonlar limon-altın ve elma yeşili. */
 :root {
-  --bg-from: #6A11CB;
-  --bg-to: #FF5FA2;
-  --primary: #FF9F1C;
-  --primary-dark: #E07F00;
-  --secondary: #2EC4B6;
-  --secondary-dark: #1C9C90;
-  --ink: #2B0A3D;
+  --bg-from: #2A1B5E;
+  --bg-mid: #6A2FB0;
+  --bg-to: #F2659E;
+  --primary: #FFC233;
+  --primary-dark: #D98E04;
+  --secondary: #38D39F;
+  --secondary-dark: #0B9A6D;
+  --ink: #261A45;
   --white: #FFFFFF;
-  --card: rgba(255, 255, 255, 0.16);
-  --card-border: rgba(255, 255, 255, 0.28);
+  --card: rgba(255, 255, 255, 0.13);
+  --card-border: rgba(255, 255, 255, 0.24);
   --danger: #FFE1E6;
   --font: "Baloo 2", "Fredoka", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -23,7 +26,7 @@ html, body {
 body {
   font-family: var(--font);
   color: var(--white);
-  background: linear-gradient(160deg, var(--bg-from) 0%, var(--bg-to) 100%) fixed;
+  background: linear-gradient(170deg, var(--bg-from) 0%, var(--bg-mid) 55%, var(--bg-to) 100%) fixed;
   background-color: var(--bg-from);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;

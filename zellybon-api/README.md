@@ -37,8 +37,10 @@ Kontrol: `GET http://localhost:3000/api/health` → `{"ok":true}`
 | POST | `/api/auth/register` | `{username, password}` → `{token, user}` |
 | POST | `/api/auth/login` | `{username, password}` → `{token, user}` |
 | GET | `/api/me` | Kullanıcı: canlar, jokerler, bölüm ilerlemesi (`Authorization: Bearer <token>`) |
-| POST | `/api/main/start` | Jöle Atış: `{levelId}` → 1 can harcar (can yoksa 409) |
-| POST | `/api/main/result` | Jöle Atış: `{levelId, won}` → kazanınca can iadesi + sonraki bölüm |
+| POST | `/api/main/start` | Jöle Atış: `{levelId, boosters?}` → 1 can + seçilen güçlendiricileri harcar (yoksa 409) |
+| POST | `/api/main/result` | Jöle Atış: `{levelId, won}` → can iadesi; ilk galibiyette para ve (sandık bölümüyse) sandık |
+| GET | `/api/shop` | Dükkân ürünleri ve fiyatları |
+| POST | `/api/shop/buy` | `{itemId}` → parayla can / güçlendirici / joker al |
 | POST | `/api/scores` | Hızlı Tur: `{score, maxCombo, jelliesPopped, durationMs}` → `{isNewBest, rewards, user}` |
 | GET | `/api/records?mode=quick` | En iyi 10 Hızlı Tur + toplam istatistikler |
 | POST | `/api/levels/:id/result` | Jöle Patlat bölümü: `{won, score, stars}` → `{rewards, user}` |

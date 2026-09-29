@@ -1,14 +1,30 @@
 import { MAIN_LEVELS } from '../shooter/levels.js';
+import { CHEST_NAMES } from '../economy.js';
 
 export function renderHome(user) {
   document.getElementById('home-username').textContent = user.username;
+  document.querySelectorAll('[data-coins]').forEach((el) => {
+    el.textContent = (user.coins ?? 0).toLocaleString('tr-TR');
+  });
+
   const el = document.getElementById('home-main-level');
-  const next = Math.min(user.mainLevel, MAIN_LEVELS.length);
   if (user.mainLevel > MAIN_LEVELS.length) {
     el.textContent = `🏆 ${MAIN_LEVELS.length} bölümün hepsi tamam! Yeni bölümler yakında.`;
   } else {
-    const level = MAIN_LEVELS[next - 1];
+    const level = MAIN_LEVELS[user.mainLevel - 1];
     el.textContent = `Bölüm ${level.id} · ${level.name}`;
+  }
+
+  // Sonraki sandığa ilerleme
+  const chestEl = document.getElementById('home-chest');
+  const chest = user.nextChest;
+  chestEl.hidden = !chest;
+  if (chest) {
+    const c = CHEST_NAMES[chest.tier];
+    const left = chest.level - user.mainLevel;
+    chestEl.textContent = left === 0
+      ? `${c.icon} Bu bölümde ${c.name} seni bekliyor!`
+      : `${c.icon} ${c.name}: ${left + 1} bölüm kaldı`;
   }
 }
 

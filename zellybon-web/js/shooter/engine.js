@@ -7,11 +7,16 @@
 // - Mermisi biten jöle kaybolur. Bir tur atıp mermisi kalan jöle boş bir bekleme kutusuna iner.
 //   Bekleme kutusundaki jöle tekrar yola gönderilebilir.
 // - Tur bitiren jöle için boş kutu yoksa bölüm kaybedilir. Tüm küpler temizlenince bölüm kazanılır.
+// - Karakterli jöleler (her vuruş yine 1 mermi harcar, böylece mermi hesabı hep tutar):
+//   Zıplayan (bounce): şeritte 2 küp vurur. Roket (fast): yolda daha hızlı gider.
+//   Delici (pierce): şeritte art arda gelen aynı renk küplerin hepsini vurur.
+//   Bomba (bomb): vurduğu küpün 4 komşusundaki aynı renk küpleri de vurur (içerideki küplere ulaşır).
 
 import { createRng } from '../game/rng.js';
 
 export const SPEED = 9;          // saniyede geçilen şerit sayısı
 export const ENTRY_SPACING = 1.3; // yola giriş için öndeki jöleyle en az mesafe (şerit)
+export const FAST_MULTIPLIER = 1.8;
 
 /** Resimden ızgara üretir: grid[y][x] = renk harfi ya da null */
 export function parseArt(art) {
@@ -103,20 +108,32 @@ export function buildColumns(level, seed = `main-${level.id}`) {
     let i = 0;
     while (i < layers.length) {
       const size = Math.min(level.ammo[rng.int(level.ammo.length)], layers.length - i);
-      shooters.push({ color, ammo: size, key: layers[i] + (rng.next() - 0.5) * 2 * level.shuffle });
+      const ability = level.abilities?.length && rng.next() < (level.abilityRate ?? 0)
+        ? level.abilities[rng.int(level.abilities.length)]
+        : null;
+      shooters.push({ color, ammo: size, ability, key: layers[i] + (rng.next() - 0.5) * 2 * level.shuffle });
       i += size;
     }
   }
   shooters.sort((a, b) => a.key - b.key);
+  // Bölümün tanıttığı yeni karakter mutlaka görünsün: yoksa ilk jölelerden birine verilir
+  if (level.intro && !shooters.some((s) => s.ability === level.intro)) {
+    shooters[Math.min(1, shooters.length - 1)].ability = level.intro;
+  }
 
   const columns = Array.from({ length: level.columns }, () => []);
-  shooters.forEach((s, k) => columns[k % level.columns].push({ color: s.color, ammo: s.ammo }));
+  shooters.forEach((s, k) => columns[k % level.columns].push({ color: s.color, ammo: s.ammo, ability: s.ability }));
   return columns;
 }
 
 let nextId = 1;
 
-export function createEngine(level, { seed } = {}) {
+/**
+ * @param {object} level
+ * @param {{ seed?: string, boosters?: { extraSlot?: boolean, superStart?: boolean } }} [opts]
+ *   extraSlot: +1 bekleme kutusu, superStart: her sütunun ilk jölesi Delici olur
+ */
+export function createEngine(level, { seed, boosters = {} } = {}) {
   const grid = parseArt(level.art);
   const H = grid.length;
   const W = grid[0].length;
@@ -132,13 +149,17 @@ export function createEngine(level, { seed } = {}) {
     totalCubes,
     cubesLeft: totalCubes,
     columns: buildColumns(level, seed).map((col) => col.map((s) => ({ id: nextId++, ...s }))),
-    slots: Array(level.slots).fill(null),
+    slots: Array(level.slots + (boosters.extraSlot ? 1 : 0)).fill(null),
     belt: [],     // yoldaki jöleler: { id, color, ammo, traveled, lastLane }
     pending: [],  // yola girmeyi bekleyenler
     status: 'playing', // 'playing' | 'won' | 'lost'
     loseReason: null,
     shots: 0,
   };
+
+  if (boosters.superStart) {
+    for (const col of state.columns) if (col[0]) col[0].ability = 'pierce';
+  }
 
   const beltCount = () => state.belt.length + state.pending.length;
   const canLaunch = () => state.status === 'playing' && beltCount() < level.belt;
@@ -170,6 +191,39 @@ export function createEngine(level, { seed } = {}) {
     return !candidates.some((s) => colorExposed(state.grid, s.color));
   }
 
+  function hit(sh, cube, lane, events, via = null) {
+    state.grid[cube.y][cube.x] = null;
+    state.cubesLeft--;
+    state.shots++;
+    sh.ammo--;
+    events.push({ type: 'hit', shooter: sh, lane, cube, color: sh.color, via });
+  }
+
+  const matches = (cube, color) => cube && state.grid[cube.y][cube.x] === color;
+
+  // Bir şeritten geçerken ateş: ilk küp jölenin rengindeyse vurur, sonra karakter yeteneği devreye girer
+  function fireLane(sh, p, events) {
+    const cube = firstCubeInLane(state.grid, p);
+    if (!matches(cube, sh.color)) return;
+    hit(sh, cube, p, events);
+
+    if (sh.ability === 'bounce' || sh.ability === 'pierce') {
+      let extra = sh.ability === 'bounce' ? 1 : Infinity;
+      while (extra-- > 0 && sh.ammo > 0) {
+        const next = firstCubeInLane(state.grid, p);
+        if (!matches(next, sh.color)) break;
+        hit(sh, next, p, events, sh.ability);
+      }
+    } else if (sh.ability === 'bomb') {
+      for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+        if (sh.ammo <= 0) break;
+        const n = { x: cube.x + dx, y: cube.y + dy };
+        if (n.x < 0 || n.y < 0 || n.x >= W || n.y >= H) continue;
+        if (matches(n, sh.color)) hit(sh, n, p, events, 'bomb');
+      }
+    }
+  }
+
   /** Zamanı dt (ms) ilerletir; olay listesi döndürür (çizim/animasyon için). */
   function step(dt) {
     const events = [];
@@ -177,8 +231,8 @@ export function createEngine(level, { seed } = {}) {
 
     // Bekleyenler, önlerindeki jöle yeterince uzaklaşınca yola girer
     while (state.pending.length) {
-      const last = state.belt[state.belt.length - 1];
-      if (last && last.traveled < ENTRY_SPACING) break;
+      const nearest = state.belt.reduce((m, b) => Math.min(m, b.traveled), Infinity);
+      if (nearest < ENTRY_SPACING) break;
       const sh = state.pending.shift();
       state.belt.push(sh);
       events.push({ type: 'enter', shooter: sh });
@@ -186,19 +240,12 @@ export function createEngine(level, { seed } = {}) {
 
     const advance = (SPEED * dt) / 1000;
     for (const sh of [...state.belt]) {
-      sh.traveled += advance;
+      sh.traveled += sh.ability === 'fast' ? advance * FAST_MULTIPLIER : advance;
       const lane = Math.min(L - 1, Math.floor(sh.traveled));
       // Kare atlamalarında aradaki şeritleri de işle
       for (let p = sh.lastLane + 1; p <= lane && sh.ammo > 0; p++) {
         sh.lastLane = p;
-        const cube = firstCubeInLane(state.grid, p);
-        if (cube && state.grid[cube.y][cube.x] === sh.color) {
-          state.grid[cube.y][cube.x] = null;
-          state.cubesLeft--;
-          state.shots++;
-          sh.ammo--;
-          events.push({ type: 'hit', shooter: sh, lane: p, cube, color: sh.color });
-        }
+        fireLane(sh, p, events);
       }
       if (sh.ammo <= 0) {
         state.belt.splice(state.belt.indexOf(sh), 1);

@@ -1,0 +1,138 @@
+/* Para, dükkân, sandık, güçlendirici ve bölüm öncesi ekranı */
+
+.home-actions { display: flex; align-items: center; gap: 8px; }
+
+.coin-pill {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 4px 14px;
+  border: 2px solid rgba(255, 194, 51, 0.7);
+  border-radius: 999px;
+  background: rgba(38, 26, 69, 0.45);
+  color: #FFE08A;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.coin-pill b { font-variant-numeric: tabular-nums; }
+.coin-pill-static { margin-left: auto; cursor: default; }
+
+.chest-line {
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: rgba(38, 26, 69, 0.35);
+  font-weight: 700;
+}
+
+.chest-line.chest-now { background: rgba(255, 194, 51, 0.3); border: 1px solid rgba(255, 194, 51, 0.8); }
+.chest-line[hidden] { display: none; }
+.shop-btn { width: 100%; }
+
+/* ---------- Bölüm öncesi ---------- */
+
+.gummy-preview { align-self: center; filter: drop-shadow(0 8px 16px rgba(38, 26, 69, 0.35)); }
+
+.intro-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border-color: rgba(255, 194, 51, 0.7);
+  background: rgba(255, 194, 51, 0.16);
+}
+
+.intro-card[hidden] { display: none; }
+.intro-card p { margin: 2px 0 0; }
+
+.booster-list { display: flex; flex-direction: column; gap: 8px; }
+
+.booster-card {
+  font: inherit;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(38, 26, 69, 0.3);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s, border-color 0.15s;
+}
+
+.booster-card:active { transform: scale(0.97); }
+.booster-card.on { background: rgba(56, 211, 159, 0.3); border-color: #38D39F; }
+.booster-card:disabled { opacity: 0.5; cursor: default; }
+.booster-icon { font-size: 1.8rem; }
+.booster-text { display: flex; flex-direction: column; flex: 1; line-height: 1.15; }
+.booster-text small { opacity: 0.85; }
+
+.booster-count {
+  min-width: 42px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-weight: 800;
+  text-align: center;
+}
+
+.booster-card.on .booster-count::after { content: ' ✓'; }
+
+/* ---------- Dükkân ---------- */
+
+.shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 10px 12px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  text-align: center;
+}
+
+.shop-icon { font-size: 2.2rem; line-height: 1.1; }
+.shop-card small { opacity: 0.85; }
+.btn-buy { margin-top: 6px; width: 100%; min-height: 44px; font-size: 1.05rem; }
+
+/* ---------- Sandık ---------- */
+
+.chest {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 26px;
+  border-radius: 22px;
+  border: 3px solid #FFFFFF;
+  animation: chest-open 0.9s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.chest[hidden] { display: none; }
+.chest-icon { font-size: 3rem; line-height: 1; animation: chest-wiggle 0.6s ease-in-out 0.9s 2; }
+.chest-bronze { background: linear-gradient(160deg, #D9A27A, #A8643B); }
+.chest-silver { background: linear-gradient(160deg, #E8ECF4, #9AA5BA); color: var(--ink); }
+.chest-gold { background: linear-gradient(160deg, #FFE08A, #E09F00); color: var(--ink); }
+.chest-diamond { background: linear-gradient(160deg, #A5CCFF, #6523C7); }
+.chest-legend { background: linear-gradient(160deg, #FF6FB5, #9D5CFF, #4C8DFF); box-shadow: 0 0 30px rgba(255, 194, 51, 0.8); }
+
+@keyframes chest-open {
+  0% { transform: scale(0) rotate(-10deg); }
+  70% { transform: scale(1.12) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes chest-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}

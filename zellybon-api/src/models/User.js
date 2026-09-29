@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { STARTING_JOKERS, LIVES_MAX, livesInfo } from '../rewards.js';
+import { STARTING_JOKERS, STARTING_BOOSTERS, LIVES_MAX, livesInfo, nextChest } from '../rewards.js';
 
 const levelProgressSchema = new mongoose.Schema(
   {
@@ -9,7 +9,7 @@ const levelProgressSchema = new mongoose.Schema(
   { _id: false },
 );
 
-const jokerField = (type) => ({ type: Number, default: STARTING_JOKERS[type], min: 0 });
+const counter = (start) => ({ type: Number, default: start, min: 0 });
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -24,18 +24,23 @@ const userSchema = new mongoose.Schema({
   },
   passwordHash: { type: String, required: true },
   bestScore: { type: Number, default: 0 },
+  coins: counter(0),
 
   // Ana oyun (Jöle Atış)
   mainLevel: { type: Number, default: 1 }, // açılmış en yüksek bölüm
   lives: { type: Number, default: LIVES_MAX, min: 0 },
   livesAt: { type: Date, default: Date.now },
+  boosters: {
+    extraSlot: counter(STARTING_BOOSTERS.extraSlot),
+    superStart: counter(STARTING_BOOSTERS.superStart),
+  },
 
   // Jöle Patlat
   jokers: {
-    hammer: jokerField('hammer'),
-    shuffle: jokerField('shuffle'),
-    colorBomb: jokerField('colorBomb'),
-    hourglass: jokerField('hourglass'),
+    hammer: counter(STARTING_JOKERS.hammer),
+    shuffle: counter(STARTING_JOKERS.shuffle),
+    colorBomb: counter(STARTING_JOKERS.colorBomb),
+    hourglass: counter(STARTING_JOKERS.hourglass),
   },
   // Bölüm numarası → { stars, best }
   levels: { type: Map, of: levelProgressSchema, default: {} },
@@ -53,6 +58,11 @@ userSchema.methods.publicJokers = function publicJokers() {
   };
 };
 
+userSchema.methods.publicBoosters = function publicBoosters() {
+  const b = this.boosters ?? {};
+  return { extraSlot: b.extraSlot ?? 0, superStart: b.superStart ?? 0 };
+};
+
 userSchema.methods.publicLevels = function publicLevels() {
   const out = {};
   for (const [id, p] of this.levels ?? []) out[id] = { stars: p.stars, best: p.best };
@@ -64,8 +74,11 @@ userSchema.methods.toPublic = function toPublic() {
     id: this._id,
     username: this.username,
     bestScore: this.bestScore,
+    coins: this.coins ?? 0,
     mainLevel: this.mainLevel,
+    nextChest: nextChest(this.mainLevel),
     lives: livesInfo(this),
+    boosters: this.publicBoosters(),
     jokers: this.publicJokers(),
     levels: this.publicLevels(),
   };

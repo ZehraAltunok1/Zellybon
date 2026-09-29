@@ -1,6 +1,11 @@
 // Canvas 2D çizimi ve animasyonlar. Oyun mantığını bilmez; sadece kendisine verilen adımları oynatır.
 
-export const JELLY_COLORS = ['#FF3B5C', '#FF8C1A', '#FFD60A', '#3DDC84', '#2D9CFF', '#A259FF'];
+import { PALETTE, MATCH_KEYS } from '../palette.js';
+import { renderGummy } from '../shooter/shapes.js';
+
+export const JELLY_COLORS = MATCH_KEYS.map((k) => PALETTE[k].base);
+// Renk → şeker şekli: kırmızı kalp, turuncu yıldız, sarı kola, yeşil ayıcık, mavi halka, mor çilek
+const MATCH_SHAPES = ['heart', 'star', 'cola', 'bear', 'ring', 'strawberry'];
 
 const easing = {
   linear: (t) => t,
@@ -13,15 +18,6 @@ const easing = {
     return 1 - 0.08 * Math.sin(u * Math.PI);
   },
 };
-
-function shade(hex, amount) {
-  const n = parseInt(hex.slice(1), 16);
-  const mix = (v) => Math.round(amount >= 0 ? v + (255 - v) * amount : v * (1 + amount));
-  const r = mix((n >> 16) & 255);
-  const g = mix((n >> 8) & 255);
-  const b = mix(n & 255);
-  return `rgb(${r},${g},${b})`;
-}
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -72,43 +68,10 @@ export class Renderer {
   }
 
   // Her renk için jöleyi bir kez ekran dışı canvas'a çizer; karelerde sadece kopyalanır.
+  // Her renk kendi şeker şekliyle çizilir (renkleri şekilden de ayırt etmek kolaylaşır).
   _buildJellyCache() {
     const px = Math.ceil(this.cell * this.dpr);
-    this.jellyCache = JELLY_COLORS.map((color) => {
-      const c = document.createElement('canvas');
-      c.width = px;
-      c.height = px;
-      const g = c.getContext('2d');
-      const s = px * 0.84;
-      const o = (px - s) / 2;
-      const r = s * 0.32;
-      // gölge
-      g.fillStyle = 'rgba(40, 0, 60, 0.28)';
-      roundRect(g, o, o + px * 0.05, s, s, r);
-      g.fill();
-      // gövde
-      const body = g.createLinearGradient(0, o, 0, o + s);
-      body.addColorStop(0, shade(color, 0.35));
-      body.addColorStop(0.55, color);
-      body.addColorStop(1, shade(color, -0.22));
-      g.fillStyle = body;
-      roundRect(g, o, o, s, s, r);
-      g.fill();
-      // kenar
-      g.strokeStyle = shade(color, -0.3);
-      g.lineWidth = Math.max(1, px * 0.025);
-      g.stroke();
-      // parlak üst vurgu
-      g.fillStyle = 'rgba(255,255,255,0.55)';
-      g.beginPath();
-      g.ellipse(o + s * 0.36, o + s * 0.24, s * 0.22, s * 0.11, -0.35, 0, Math.PI * 2);
-      g.fill();
-      g.fillStyle = 'rgba(255,255,255,0.8)';
-      g.beginPath();
-      g.arc(o + s * 0.7, o + s * 0.22, s * 0.05, 0, Math.PI * 2);
-      g.fill();
-      return c;
-    });
+    this.jellyCache = MATCH_KEYS.map((key, i) => renderGummy({ shape: MATCH_SHAPES[i], color: key, size: px }));
   }
 
   _sprite(color, col, row) {

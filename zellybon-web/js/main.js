@@ -16,12 +16,15 @@ import { renderHub, renderLevelMap } from './screens/hub.js';
 import { showQuickResult, showLevelResult } from './screens/result.js';
 import { showShooterResult } from './screens/shooterResult.js';
 import { showRecords } from './screens/records.js';
+import { renderMainStart, selectedBoosters } from './screens/mainStart.js';
+import { showShop, renderShop } from './screens/shop.js';
 
 const screens = [...document.querySelectorAll('.screen')];
 let current = 'loading';
 let previous = null;
 let matchGame = null;   // Jöle Patlat oturumu
 let shooterGame = null; // Jöle Atış oturumu
+let shopReturn = 'home'; // dükkândan dönülecek ekran
 
 function show(name) {
   previous = current;
@@ -69,6 +72,7 @@ onUserChange(() => {
   if (!user) return;
   if (current === 'home') renderHome(user);
   if (current === 'hub') renderHub(user);
+  if (current === 'shop') renderShop();
 });
 
 // ---------- Ekranlar ----------
@@ -93,23 +97,34 @@ function goLevels() {
 
 // ---------- Jöle Atış (ana oyun) ----------
 
-async function playMain() {
+// OYNA: önce bölüm öncesi ekranı (şekil, yeni karakter, güçlendiriciler); can BAŞLA'da harcanır
+function playMain() {
   stopGames();
   const user = getUser();
   if (user.lives.lives < 1) {
     show('nolives');
     return;
   }
+  renderMainStart(user, currentMainLevelId(user));
+  document.getElementById('ms-status').textContent = '';
+  show('main-start');
+}
+
+async function goMain() {
+  const user = getUser();
   const levelId = currentMainLevelId(user);
+  const boosters = selectedBoosters();
+  const statusEl = document.getElementById('ms-status');
+  statusEl.textContent = '';
   try {
-    const res = await Api.mainStart(levelId);
+    const res = await Api.mainStart(levelId, boosters);
     setUser(res.user);
   } catch (err) {
-    if (err.status === 409) {
+    if (err.status === 409 && err.message.includes('Can')) {
       show('nolives');
       return;
     }
-    alert(err.message);
+    statusEl.textContent = err.message;
     return;
   }
 
@@ -124,6 +139,7 @@ async function playMain() {
       hint: document.getElementById('shooter-hint'),
     },
     level: getMainLevel(levelId),
+    boosters: Object.fromEntries(boosters.map((b) => [b, true])),
     onEnd: (result) => {
       shooterGame = null;
       show('shooter-result');
@@ -236,6 +252,23 @@ document.addEventListener('click', (e) => {
       break;
     case 'main-play':
       playMain();
+      break;
+    case 'main-go':
+      goMain();
+      break;
+    case 'shop':
+      if (current !== 'shop') shopReturn = current;
+      stopGames();
+      show('shop');
+      showShop();
+      break;
+    case 'back':
+      if (shopReturn === 'main-start') playMain();
+      else if (shopReturn === 'hub') goHub();
+      else if (shopReturn === 'nolives') {
+        if (getUser().lives.lives > 0) playMain();
+        else show('nolives');
+      } else goHome();
       break;
     case 'quick-play':
       startQuick();

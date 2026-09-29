@@ -1,29 +1,19 @@
 // Jöle Atış (ana oyun) bölümleri. Her bölüm, küplerden oluşan bir piksel resimdir.
-// Harfler renkleri gösterir, '.' boş hücredir.
+// Harfler renkleri gösterir (bkz. palette.js), '.' boş hücredir.
 
-export const CUBE_COLORS = {
-  r: '#FF3B5C', // kırmızı
-  o: '#FF8C1A', // turuncu
-  y: '#FFD60A', // sarı
-  g: '#3DDC84', // yeşil
-  b: '#2D9CFF', // mavi
-  p: '#A259FF', // mor
-  i: '#FF8FC7', // pembe
-  w: '#F4F1FA', // beyaz
-  n: '#A0643A', // kahverengi
-  k: '#3A2A4A', // koyu
-};
+import { PALETTE } from '../palette.js';
+import { SHAPE_ORDER } from './shapes.js';
 
-export const COLOR_NAMES = {
-  r: 'Kırmızı', o: 'Turuncu', y: 'Sarı', g: 'Yeşil', b: 'Mavi',
-  p: 'Mor', i: 'Pembe', w: 'Beyaz', n: 'Kahverengi', k: 'Koyu',
-};
+export const CUBE_COLORS = Object.fromEntries(Object.entries(PALETTE).map(([k, v]) => [k, v.base]));
 
-// slots: bekleme kutusu sayısı, columns: jöle sütunu sayısı, belt: kaykay yolundaki en fazla jöle,
-// ammo: jölelerin mermi sayıları (renk başına küp sayısı bu parçalara bölünür),
-// shuffle: sıralamanın ne kadar karışık olacağı (0 = en kolay)
-// Değerler, rastgele oynayan bir botun kazanma oranı bölümden bölüme düşecek şekilde simülasyonla ayarlandı.
-export const MAIN_LEVELS = [
+// slots: bekleme kutusu, columns: jöle sütunu, belt: kaykay yolundaki en fazla jöle,
+// ammo: mermi parçaları, shuffle: sıralamanın ne kadar karışık olacağı (0 = en kolay),
+// abilities: bu bölümde görülebilecek karakterler, abilityRate: bir jölenin karakterli olma olasılığı,
+// intro: bu bölümde ilk kez tanıtılan karakter.
+// Zorluk değerleri, rastgele oynayan bir botun kazanma oranı bölümden bölüme düşecek şekilde
+// simülasyonla ayarlandı (bkz. tests/shooter.test.js — her bölüm akıllı bir oyuncuyla kazanılabilir).
+// 8. ve 10. bölümler bilerek daha kolay: zor bölümlerin arasında "nefes bölümü".
+const RAW_LEVELS = [
   {
     id: 1, name: 'Kalp', slots: 5, columns: 2, belt: 4, ammo: [10, 20], shuffle: 0,
     art: [
@@ -53,7 +43,8 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 3, name: 'Çiçek', slots: 3, columns: 3, belt: 5, ammo: [10, 20, 30], shuffle: 1,
+    id: 3, name: 'Çiçek', slots: 4, columns: 3, belt: 4, ammo: [10, 20], shuffle: 0,
+    abilities: ['bounce'], abilityRate: 0.35, intro: 'bounce',
     art: [
       '...iiii...',
       '..iiiiii..',
@@ -69,7 +60,8 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 4, name: 'Dondurma', slots: 3, columns: 3, belt: 4, ammo: [10, 20, 30], shuffle: 3,
+    id: 4, name: 'Dondurma', slots: 3, columns: 3, belt: 5, ammo: [10, 20], shuffle: 3,
+    abilities: ['bounce'], abilityRate: 0.25,
     art: [
       '....rr....',
       '...iiii...',
@@ -86,7 +78,8 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 5, name: 'Kedi', slots: 3, columns: 3, belt: 5, ammo: [10, 20, 30], shuffle: 8,
+    id: 5, name: 'Kedi', slots: 3, columns: 3, belt: 4, ammo: [10, 20], shuffle: 6,
+    abilities: ['bounce'], abilityRate: 0.25,
     art: [
       '.o.......o.',
       '.oo.....oo.',
@@ -101,7 +94,8 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 6, name: 'Yıldız', slots: 4, columns: 3, belt: 4, ammo: [5, 10, 20], shuffle: 6,
+    id: 6, name: 'Yıldız', slots: 2, columns: 4, belt: 3, ammo: [5, 10, 20], shuffle: 3,
+    abilities: ['bounce', 'fast'], abilityRate: 0.3, intro: 'fast',
     art: [
       '.....o.....',
       '....oyo....',
@@ -118,7 +112,8 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 7, name: 'Ev', slots: 2, columns: 4, belt: 5, ammo: [5, 10, 20], shuffle: 6,
+    id: 7, name: 'Ev', slots: 3, columns: 3, belt: 3, ammo: [10, 20], shuffle: 9,
+    abilities: ['bounce', 'fast'], abilityRate: 0.25,
     art: [
       '.....rr.....',
       '....rrrr....',
@@ -136,7 +131,26 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 8, name: 'Gökkuşağı', slots: 3, columns: 4, belt: 4, ammo: [5, 10, 20], shuffle: 4,
+    id: 8, name: 'Çilek', slots: 3, columns: 3, belt: 3, ammo: [10, 20], shuffle: 0,
+    abilities: ['bounce', 'fast'], abilityRate: 0.25,
+    art: [
+      '...g.g.g...',
+      '....ggg....',
+      '..rrrgrrr..',
+      '.rrrrrrrrr.',
+      'rryrrryrrry',
+      'rrrrrrrrrrr',
+      '.rryrrryrr.',
+      '.rrrrrrrrr.',
+      '..rryrrrr..',
+      '...rrrrr...',
+      '....rrr....',
+      '.....r.....',
+    ],
+  },
+  {
+    id: 9, name: 'Gökkuşağı', slots: 3, columns: 4, belt: 3, ammo: [10, 20], shuffle: 0,
+    abilities: ['bounce', 'fast'], abilityRate: 0.2,
     art: [
       '....rrrrr....',
       '..rroooooorr.',
@@ -151,7 +165,8 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 9, name: 'Balık', slots: 2, columns: 4, belt: 4, ammo: [10, 20], shuffle: 0,
+    id: 10, name: 'Balık', slots: 2, columns: 4, belt: 3, ammo: [5, 10, 20], shuffle: 3,
+    abilities: ['bounce', 'fast', 'pierce'], abilityRate: 0.3, intro: 'pierce',
     art: [
       '.....bbbb....',
       '...bbbbbbb...',
@@ -166,7 +181,22 @@ export const MAIN_LEVELS = [
     ],
   },
   {
-    id: 10, name: 'Roket', slots: 2, columns: 4, belt: 4, ammo: [5, 10], shuffle: 4,
+    id: 11, name: 'Karpuz', slots: 1, columns: 4, belt: 3, ammo: [5, 10], shuffle: 0,
+    abilities: ['bounce', 'fast', 'pierce'], abilityRate: 0.25,
+    art: [
+      'rrkrrrrkrrrkr',
+      'rrrrrkrrrrrrr',
+      '.rrkrrrrrkrr.',
+      '.rrrrrrrrrrr.',
+      '..wrrrkrrrw..',
+      '..gwwwwwwwg..',
+      '...ggggggg...',
+      '....ggggg....',
+    ],
+  },
+  {
+    id: 12, name: 'Roket', slots: 1, columns: 3, belt: 3, ammo: [5, 10, 20], shuffle: 3,
+    abilities: ['bounce', 'fast', 'pierce'], abilityRate: 0.25,
     art: [
       '.....rr.....',
       '....rrrr....',
@@ -185,6 +215,154 @@ export const MAIN_LEVELS = [
       '.....oo.....',
     ],
   },
+  {
+    id: 13, name: 'Ayıcık', slots: 1, columns: 3, belt: 4, ammo: [10, 20], shuffle: 3,
+    abilities: ['bounce', 'fast', 'pierce'], abilityRate: 0.25,
+    art: [
+      '.nn......nn.',
+      'nnnn....nnnn',
+      'nnnnnnnnnnnn',
+      '.nnnnnnnnnn.',
+      '.nnknnnnknn.',
+      '.nnnnnnnnnn.',
+      '.nnnwwwwnnn.',
+      '.nnwwkkwwnn.',
+      '.inwwwwwwni.',
+      '..nnnwwnnn..',
+      '...nnnnnn...',
+    ],
+  },
+  {
+    id: 14, name: 'Kaktüs', slots: 1, columns: 3, belt: 3, ammo: [10, 20], shuffle: 9,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.3, intro: 'bomb',
+    art: [
+      '.....y.....',
+      '....yiy....',
+      '.....g.....',
+      '....ggg....',
+      '.g..ggg....',
+      '.g..ggg..g.',
+      '.gg.gwg..g.',
+      '..gggggggg.',
+      '....ggg.gg.',
+      '....gwg....',
+      '....ggg....',
+      '.ooooooooo.',
+      '..ononono..',
+      '..ooooooo..',
+    ],
+  },
+  {
+    id: 15, name: 'Ahtapot', slots: 1, columns: 4, belt: 3, ammo: [5, 10], shuffle: 6,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.25,
+    art: [
+      '....iiiii....',
+      '..iiiiiiiii..',
+      '.iiiiiiiiiii.',
+      '.iwwiiiiiwwi.',
+      '.iwkiiiiikwi.',
+      '.iiiiiiiiiii.',
+      '.iiiirrriiii.',
+      '..iiiiiiiii..',
+      '.ii.ii.ii.ii.',
+      'ii..ii.ii..ii',
+      'i...i...i...i',
+    ],
+  },
+  {
+    id: 16, name: 'Kek', slots: 2, columns: 3, belt: 3, ammo: [5, 10, 20], shuffle: 0,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.25,
+    art: [
+      '.....rr.....',
+      '.....rr.....',
+      '...iiiiii...',
+      '..iiyiibii..',
+      '.iiiiiiiiii.',
+      '.ibiiyiiiyi.',
+      'iiiiiiiiiiii',
+      '.oonoonoono.',
+      '.oonoonoono.',
+      '..onoonoon..',
+      '..onoonoon..',
+      '...oooooo...',
+    ],
+  },
+  {
+    id: 17, name: 'Kurbağa', slots: 1, columns: 4, belt: 3, ammo: [5, 10], shuffle: 9,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.25,
+    art: [
+      '.www.....www.',
+      'wwkwwgggwwkww',
+      'wwwwwgggwwwww',
+      'ggggggggggggg',
+      'gigggggggggig',
+      'ggrrrrrrrrrgg',
+      'gggrrrrrrrggg',
+      'ggggggggggggg',
+      '.ggggggggggg.',
+      '.gg.ggggg.gg.',
+      'gggg.....gggg',
+    ],
+  },
+  {
+    id: 18, name: 'Kelebek', slots: 1, columns: 3, belt: 4, ammo: [5, 10], shuffle: 9,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: [
+      'pp....k....pp',
+      'pppp..k..pppp',
+      'ppiipkkkpiipp',
+      'pppiipkpiippp',
+      'ppppppkpppppp',
+      '.ppppbkbpppp.',
+      '..ibbbkbbbi..',
+      '.bbybbkbbybb.',
+      '.bbbbbkbbbbb.',
+      '..bbb.k.bbb..',
+      '......k......',
+    ],
+  },
+  {
+    id: 19, name: 'Penguen', slots: 2, columns: 4, belt: 3, ammo: [5, 10, 20], shuffle: 9,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: [
+      '...kkkkk...',
+      '..kkkkkkk..',
+      '.kkwkkkwkk.',
+      '.kwwwkwwwk.',
+      '.kwwwowwwk.',
+      'kkwwwwwwwkk',
+      'kkwwwwwwwkk',
+      'kwwwwwwwwwk',
+      'kwwwwwwwwwk',
+      '.kwwwwwwwk.',
+      '..kkkkkkk..',
+      '..oo...oo..',
+    ],
+  },
+  {
+    id: 20, name: 'Taç', slots: 1, columns: 4, belt: 4, ammo: [5, 10, 20], shuffle: 6,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: [
+      'y.....y.....y',
+      'yy...yyy...yy',
+      'yyy.yyyyy.yyy',
+      'yyyyyyyyyyyyy',
+      'yyryyybyyygyy',
+      'yyyyyyyyyyyyy',
+      'ooooooooooooo',
+      'oyoyoyoyoyoyo',
+      'ooooooooooooo',
+    ],
+  },
 ];
+
+// Her bölümün jöle şekli sırayla döner: ayıcık, kalp, kola şişesi, yıldız, halka, çilek
+export const MAIN_LEVELS = RAW_LEVELS.map((l) => ({
+  abilities: [],
+  abilityRate: 0,
+  intro: null,
+  ...l,
+  shape: SHAPE_ORDER[(l.id - 1) % SHAPE_ORDER.length],
+}));
 
 export const getMainLevel = (id) => MAIN_LEVELS.find((l) => l.id === id) ?? null;

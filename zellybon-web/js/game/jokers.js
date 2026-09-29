@@ -46,12 +46,6 @@ export const HOW_TO_EARN = [
   'Her bölüm galibiyeti → ❤️ +1 can',
   'Bölümü ilk kez geçmek → bir joker; her 5. bölüm → hazine sandığı (her jokerden 1)',
   'Bir bölümde ilk kez 3 yıldız → 🌈 Renk Bombası',
+  'Jokerleri Jöle Atış\'ta kazandığın paralarla 🛒 Dükkân\'dan da alabilirsin',
 ];
 
-export const REWARD_LABELS = {
-  life: { icon: '❤️', name: 'Can' },
-  hammer: { icon: '🔨', name: 'Çekiç' },
-  colorBomb: { icon: '🌈', name: 'Renk Bombası' },
-  shuffle: { icon: '🔀', name: 'Karıştır' },
-  hourglass: { icon: '⏳', name: 'Kum Saati' },
-};

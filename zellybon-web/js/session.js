@@ -1,6 +1,6 @@
 // Giriş yapan kullanıcının durumu (can, joker, ilerleme) ve can sayacı.
 
-import { REWARD_LABELS } from './game/jokers.js';
+import { REWARD_LABELS } from './economy.js';
 
 let user = null;
 let syncedAt = 0;

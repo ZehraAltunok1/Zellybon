@@ -13,24 +13,30 @@ export class ShooterGame {
    *   onEnd: (result: { levelId: number, won: boolean, reason: string|null, durationMs: number }) => void,
    * }} opts
    */
-  constructor({ canvas, hud, level, onEnd }) {
+  constructor({ canvas, hud, level, boosters = {}, onEnd }) {
     this.canvas = canvas;
     this.hud = hud;
     this.level = level;
+    this.boosters = boosters;
     this.onEnd = onEnd;
     this._onResize = () => this.renderer.resize();
     this._onPointer = (e) => this._pointer(e);
   }
 
   start() {
-    this.engine = createEngine(this.level);
+    this.engine = createEngine(this.level, { boosters: this.boosters });
     this.renderer = new ShooterRenderer(this.canvas, this.engine);
     this.renderer.resize();
     this.ended = false;
     this.clock = 0;
 
     this.hud.title.textContent = `Bölüm ${this.level.id} · ${this.level.name}`;
-    this._hint('Bir jöleye dokun: yola çıkar ve kendi rengindeki küpleri vurur!', 3500);
+    this._hint(
+      this.level.id === 1
+        ? 'Bir jöleye dokun: yola çıkar ve kendi rengindeki küpleri vurur!'
+        : `Bölüm ${this.level.id}: tüm küpleri temizle!`,
+      3000,
+    );
     this.canvas.addEventListener('pointerdown', this._onPointer);
     window.addEventListener('resize', this._onResize);
 

@@ -1,6 +1,8 @@
 // Jöle Atış çizimi: resim, kaykay yolu, jöleler, bekleme kutuları, sütunlar ve animasyonlar.
 
 import { CUBE_COLORS } from './levels.js';
+import { renderGummy, renderCube, drawAbilityBadge } from './shapes.js';
+import { PALETTE } from '../palette.js';
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -10,12 +12,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
-}
-
-function shade(hex, amount) {
-  const n = parseInt(hex.slice(1), 16);
-  const mix = (v) => Math.round(amount >= 0 ? v + (255 - v) * amount : v * (1 + amount));
-  return `rgb(${mix((n >> 16) & 255)},${mix((n >> 8) & 255)},${mix(n & 255)})`;
 }
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -44,7 +40,8 @@ export class ShooterRenderer {
     const cssW = Math.min(parent.clientWidth, 520);
     const availH = parent.clientHeight || cssW * 1.6;
 
-    const tokenCount = Math.max(level.slots, level.columns * 1.3);
+    // Kutu sayısı Ekstra Kutu güçlendiricisiyle bölüm ayarından fazla olabilir
+    const tokenCount = Math.max(this.engine.state.slots.length, level.columns * 1.3);
     const token = Math.max(32, Math.min(54, cssW / (tokenCount + 1.2)));
     const bottomH = token * 1.3 + 14 + VISIBLE_IN_COLUMN * token * 0.95 + 8;
     const band = 1.9; // yol bandı, küp boyutu cinsinden
@@ -78,57 +75,13 @@ export class ShooterRenderer {
   _buildCaches() {
     const { cube, token } = this.L;
     const dpr = this.dpr;
+    const { shape } = this.engine.state.level;
     this.cubeCache = {};
     this.tokenCache = {};
-    for (const [key, color] of Object.entries(CUBE_COLORS)) {
-      // Küp
-      const cpx = Math.max(4, Math.ceil(cube * dpr));
-      const c = document.createElement('canvas');
-      c.width = cpx;
-      c.height = cpx;
-      const g = c.getContext('2d');
-      const inset = cpx * 0.06;
-      const s = cpx - inset * 2;
-      const grad = g.createLinearGradient(0, inset, 0, inset + s);
-      grad.addColorStop(0, shade(color, 0.3));
-      grad.addColorStop(1, shade(color, -0.15));
-      g.fillStyle = grad;
-      roundRect(g, inset, inset, s, s, s * 0.22);
-      g.fill();
-      g.fillStyle = 'rgba(255,255,255,0.35)';
-      roundRect(g, inset + s * 0.15, inset + s * 0.1, s * 0.5, s * 0.18, s * 0.09);
-      g.fill();
-      this.cubeCache[key] = c;
-
-      // Jöle (atıcı)
-      const tpx = Math.ceil(token * dpr);
-      const tc = document.createElement('canvas');
-      tc.width = tpx;
-      tc.height = tpx;
-      const tg = tc.getContext('2d');
-      const r = tpx * 0.42;
-      const cx = tpx / 2;
-      const cy = tpx / 2 + tpx * 0.03;
-      tg.fillStyle = 'rgba(40,0,60,0.3)';
-      tg.beginPath();
-      tg.ellipse(cx, cy + r * 0.12, r, r * 0.95, 0, 0, Math.PI * 2);
-      tg.fill();
-      const body = tg.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r);
-      body.addColorStop(0, shade(color, 0.45));
-      body.addColorStop(0.6, color);
-      body.addColorStop(1, shade(color, -0.25));
-      tg.fillStyle = body;
-      tg.beginPath();
-      tg.ellipse(cx, cy, r, r * 0.92, 0, 0, Math.PI * 2);
-      tg.fill();
-      tg.strokeStyle = shade(color, -0.35);
-      tg.lineWidth = Math.max(1, tpx * 0.03);
-      tg.stroke();
-      tg.fillStyle = 'rgba(255,255,255,0.6)';
-      tg.beginPath();
-      tg.ellipse(cx - r * 0.35, cy - r * 0.45, r * 0.3, r * 0.15, -0.5, 0, Math.PI * 2);
-      tg.fill();
-      this.tokenCache[key] = tc;
+    for (const key of Object.keys(CUBE_COLORS)) {
+      this.cubeCache[key] = renderCube(key, cube * dpr);
+      // Jöleler bölümün şeklinde çizilir (ayıcık, kalp, kola şişesi …)
+      this.tokenCache[key] = renderGummy({ shape, color: key, size: token * dpr });
     }
   }
 
@@ -151,7 +104,7 @@ export class ShooterRenderer {
   }
 
   slotRect(i) {
-    const { slots } = this.engine.state.level;
+    const slots = this.engine.state.slots.length;
     const { cssW, token, slotsY } = this.L;
     // Kutular ekran genişliğine sığmalı (gap = kutunun %22'si)
     const size = Math.min(token * 1.15, (cssW - 8) / (slots + (slots - 1) * 0.22));
@@ -260,23 +213,34 @@ export class ShooterRenderer {
     for (const [id, m] of this.moving) if (this.time - m.t0 > m.dur) this.moving.delete(id);
   }
 
-  _drawToken(color, x, y, scale = 1, alpha = 1, label = null) {
+  /** Jöle: şekil + (varsa) karakter rozeti + alt kısımda mermi etiketi */
+  _drawToken(sh, x, y, scale = 1, alpha = 1, showAmmo = true) {
     const { ctx } = this;
     const { token } = this.L;
-    const img = this.tokenCache[color];
+    const img = this.tokenCache[sh.color];
     const s = token * scale;
     ctx.globalAlpha = alpha;
     ctx.drawImage(img, x - s / 2, y - s / 2, s, s);
-    if (label !== null) {
-      const fs = Math.max(10, s * 0.36);
+
+    if (sh.ability) drawAbilityBadge(ctx, sh.ability, x + s * 0.34, y - s * 0.32, Math.max(6, s * 0.17));
+
+    if (showAmmo && sh.ammo !== undefined) {
+      const label = String(sh.ammo);
+      const fs = Math.max(9, s * 0.27);
       ctx.font = `800 ${fs}px "Baloo 2", system-ui, sans-serif`;
+      const w = Math.max(fs * 1.5, ctx.measureText(label).width + fs * 0.8);
+      const h = fs * 1.15;
+      const py = y + s * 0.38;
+      roundRect(ctx, x - w / 2, py - h / 2, w, h, h / 2);
+      ctx.fillStyle = PALETTE.k.dark;
+      ctx.fill();
+      ctx.lineWidth = Math.max(1, fs * 0.12);
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.stroke();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.lineWidth = Math.max(2, fs * 0.2);
-      ctx.strokeStyle = 'rgba(43,10,61,0.85)';
-      ctx.strokeText(String(label), x, y + s * 0.04);
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(String(label), x, y + s * 0.04);
+      ctx.fillText(label, x, py + fs * 0.05);
     }
     ctx.globalAlpha = 1;
   }
@@ -364,17 +328,17 @@ export class ShooterRenderer {
     const tokenScale = Math.min(1, (t * 1.05) / token);
     for (const sh of state.pending) {
       const p = this.sourcePoint(sh.from);
-      this._drawToken(sh.color, p.x, p.y, 1 + Math.sin(this.time / 90) * 0.05, 1, sh.ammo);
+      this._drawToken(sh, p.x, p.y, 1 + Math.sin(this.time / 90) * 0.05, 1);
     }
     for (const sh of state.belt) {
       const target = this.trackPoint(sh.traveled);
       const p = this._tokenPos(sh, target);
       const bob = Math.sin(this.time / 110 + sh.id) * 1.5;
-      this._drawToken(sh.color, p.x, p.y + bob, tokenScale, 1, sh.ammo);
+      this._drawToken(sh, p.x, p.y + bob, tokenScale, 1);
     }
     for (const p of this.popping) {
       const k = (this.time - p.t0) / 250;
-      this._drawToken(p.color, p.x, p.y, tokenScale * (1 + k * 0.6), 1 - k);
+      this._drawToken({ color: p.color }, p.x, p.y, tokenScale * (1 + k * 0.6), 1 - k, false);
     }
 
     // Bekleme kutuları
@@ -390,7 +354,7 @@ export class ShooterRenderer {
       if (sh) {
         const target = { x: r.x + r.w / 2, y: r.y + r.h / 2 };
         const p = this._tokenPos(sh, target);
-        this._drawToken(sh.color, p.x, p.y, 0.95, 1, sh.ammo);
+        this._drawToken(sh, p.x, p.y, 0.95, 1);
       }
     });
 
@@ -402,7 +366,7 @@ export class ShooterRenderer {
         const front = d === 0;
         const scale = front ? 1 + Math.sin(this.time / 200 + c) * 0.03 : 0.85 - d * 0.05;
         const alpha = front ? (canLaunch ? 1 : 0.55) : 0.5 - d * 0.1;
-        this._drawToken(col[d].color, p.x, p.y, scale, alpha, front ? col[d].ammo : null);
+        this._drawToken(col[d], p.x, p.y, scale, alpha, front);
       }
       if (col.length > VISIBLE_IN_COLUMN) {
         const p = this.columnPoint(c, VISIBLE_IN_COLUMN - 1);

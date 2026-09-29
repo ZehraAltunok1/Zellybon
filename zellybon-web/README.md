@@ -32,7 +32,10 @@ npm test
 
 | Dosya | Görev |
 |---|---|
-| `js/shooter/levels.js` | Jöle Atış bölümleri (piksel resimler, zorluk ayarları) |
+| `js/palette.js` | Ortak renk paleti (her renk: açık / ana / koyu ton) |
+| `js/economy.js` | Güçlendirici, sandık ve dükkân gösterim bilgileri |
+| `js/shooter/shapes.js` | Jelibon şekillerinin vektörel çizimi, küpler, karakter rozetleri |
+| `js/shooter/levels.js` | Jöle Atış bölümleri (piksel resimler, zorluk, karakterler) |
 | `js/shooter/engine.js` | Jöle Atış kuralları: yol, atış, bekleme kutuları (DOM'suz) |
 | `js/shooter/renderer.js` | Jöle Atış çizimi ve animasyonları |
 | `js/shooter/game.js` | Jöle Atış kontrolcüsü |

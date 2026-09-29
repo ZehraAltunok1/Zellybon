@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/economy.css">
   <script>
     // Farklı bir API adresi kullanmak için:
     // window.ZELLYBON_API_URL = 'https://zellybon-api.onrender.com/api';
@@ -49,7 +50,10 @@
     <section class="screen" data-screen="home" hidden>
       <header class="home-head">
         <p class="hello">Merhaba, <strong id="home-username"></strong>!</p>
-        <button class="btn-small" data-action="logout">Çıkış</button>
+        <div class="home-actions">
+          <button class="coin-pill" data-action="shop" aria-label="Dükkân">🪙 <b data-coins>0</b></button>
+          <button class="btn-small" data-action="logout">Çıkış</button>
+        </div>
       </header>
       <h1 class="logo logo-small">Zellybon</h1>
       <div class="lives-card card" data-lives>
@@ -62,8 +66,11 @@
         <h2>Jöle Atış</h2>
         <p>Jöleni kaykay yoluna gönder, kendi rengindeki küpleri vursun. Tüm küpleri temizle, resmi ortaya çıkar!</p>
         <p class="game-card-level" id="home-main-level"></p>
+        <p class="chest-line" id="home-chest" hidden></p>
         <button class="btn btn-primary btn-huge" data-action="main-play">OYNA</button>
       </article>
+
+      <button class="btn btn-ghost shop-btn" data-action="shop">🛒 Dükkân</button>
 
       <article class="game-card game-card-side">
         <span class="game-card-tag">Can &amp; joker kazan</span>
@@ -71,6 +78,45 @@
         <p>Canın mı bitti? Eşleştirme oyununda puan topla, can ve joker kazan.</p>
         <button class="btn btn-secondary" data-action="hub">Jöle Patlat'a git</button>
       </article>
+    </section>
+
+    <!-- Jöle Atış: bölüm öncesi -->
+    <section class="screen screen-center" data-screen="main-start" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="home" aria-label="Ana menüye dön">‹</button>
+        <h2 class="title"><span id="ms-title"></span> · <span id="ms-name"></span></h2>
+      </header>
+      <canvas id="ms-preview" class="gummy-preview" aria-hidden="true"></canvas>
+      <p id="ms-shape" class="muted"></p>
+      <div id="ms-intro" class="card intro-card" hidden>
+        <canvas id="ms-intro-badge" aria-hidden="true"></canvas>
+        <div>
+          <strong id="ms-intro-name"></strong>
+          <p id="ms-intro-desc" class="muted small"></p>
+        </div>
+      </div>
+      <p id="ms-chest" class="chest-line" hidden></p>
+      <h3 class="subtitle">Güçlendiriciler</h3>
+      <div id="ms-boosters" class="booster-list"></div>
+      <div class="lives-card card" data-lives>
+        <div class="hearts"></div>
+        <span class="lives-timer"></span>
+      </div>
+      <p id="ms-status" class="muted small"></p>
+      <button class="btn btn-primary btn-huge" data-action="main-go">BAŞLA <small>(❤️ 1)</small></button>
+      <button class="btn btn-ghost" data-action="shop">🛒 Dükkân</button>
+    </section>
+
+    <!-- Dükkân -->
+    <section class="screen" data-screen="shop" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="back" aria-label="Geri">‹</button>
+        <h2 class="title">Dükkân</h2>
+        <span class="coin-pill coin-pill-static">🪙 <b id="shop-coins">0</b></span>
+      </header>
+      <p class="muted small">Paraları Jöle Atış'ta yeni bölümleri geçerek ve sandıklardan kazanırsın.</p>
+      <p id="shop-status" class="muted small" role="status"></p>
+      <div id="shop-groups"></div>
     </section>
 
     <!-- Ana oyun: Jöle Atış -->
@@ -101,6 +147,11 @@
       <h2 id="sr-title" class="title"></h2>
       <canvas id="sr-picture" class="picture" width="160" height="160"></canvas>
       <p id="sr-text" class="muted"></p>
+      <div id="sr-chest" class="chest" hidden>
+        <span id="sr-chest-icon" class="chest-icon"></span>
+        <strong id="sr-chest-name"></strong>
+      </div>
+      <ul id="sr-rewards" class="rewards" hidden></ul>
       <div class="lives-card card" data-lives>
         <div class="hearts"></div>
         <span class="lives-timer"></span>
@@ -122,7 +173,7 @@
       </div>
       <p class="muted">Beklemek istemiyor musun? Jöle Patlat'ta <strong>1.500+ puan</strong> yap ya da bir bölüm geç, can kazan!</p>
       <button class="btn btn-primary" data-action="quick-play">Hızlı Tur oyna</button>
-      <button class="btn btn-secondary" data-action="hub">Jöle Patlat</button>
+      <button class="btn btn-secondary" data-action="shop">🛒 Dükkândan can al</button>
       <button class="btn btn-ghost" data-action="home">Ana Menü</button>
     </section>
 
