@@ -7,6 +7,7 @@ export const STARTING_JOKERS = { hammer: 1, shuffle: 1, colorBomb: 1, hourglass:
 export const STARTING_BOOSTERS = { extraSlot: 1, superStart: 1 };
 export const MATCH_LEVEL_COUNT = 20; // Jöle Patlat bölümleri
 export const MAIN_LEVEL_COUNT = 20;  // Jöle Atış bölümleri
+export const NAKIS_LEVEL_COUNT = 10; // Nakış tabloları
 
 export const LIVES_MAX = 5;
 export const LIFE_REGEN_MS = 5 * 60 * 1000;
@@ -15,6 +16,9 @@ export const LIFE_REGEN_MS = 5 * 60 * 1000;
 
 /** Jöle Atış bölümü ilk kez geçilince kazanılan para: bölüm ilerledikçe artar. */
 export const mainLevelCoins = (levelId) => 10 + levelId * 5;
+
+/** Nakış tablosu ilk kez tamamlanınca kazanılan para. */
+export const nakisLevelCoins = (levelId) => 8 + levelId * 4;
 
 // ---------- Sandıklar ----------
 // Sandıklar gittikçe seyrekleşir (aralar 2, 2, 3, 4, 5, 6 … bölüm) ama değerlenir.

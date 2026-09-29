@@ -30,6 +30,14 @@
 
 .chest-line.chest-now { background: rgba(255, 194, 51, 0.3); border: 1px solid rgba(255, 194, 51, 0.8); }
 .chest-line[hidden] { display: none; }
+.lives-card[hidden] { display: none; }
+
+/* Nakış kartı: kanaviçe dokusu */
+.game-card-nakis {
+  background:
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.14) 1.5px, transparent 2px) 0 0 / 12px 12px,
+    linear-gradient(145deg, rgba(92, 200, 242, 0.32), rgba(47, 63, 158, 0.45));
+}
 .shop-btn { width: 100%; }
 
 /* ---------- Bölüm öncesi ---------- */

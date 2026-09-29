@@ -35,6 +35,9 @@ const userSchema = new mongoose.Schema({
     superStart: counter(STARTING_BOOSTERS.superStart),
   },
 
+  // Nakış
+  nakisLevel: { type: Number, default: 1 }, // açılmış en yüksek tablo
+
   // Jöle Patlat
   jokers: {
     hammer: counter(STARTING_JOKERS.hammer),
@@ -77,6 +80,7 @@ userSchema.methods.toPublic = function toPublic() {
     coins: this.coins ?? 0,
     mainLevel: this.mainLevel,
     nextChest: nextChest(this.mainLevel),
+    nakisLevel: this.nakisLevel ?? 1,
     lives: livesInfo(this),
     boosters: this.publicBoosters(),
     jokers: this.publicJokers(),

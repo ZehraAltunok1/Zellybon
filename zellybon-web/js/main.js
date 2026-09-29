@@ -2,6 +2,7 @@
 //
 // Jöle Atış (ana oyun): her bölüm 1 can harcar, kazanınca can geri gelir.
 // Jöle Patlat (destek oyunu): Hızlı Tur ve bölümlerle can + joker kazandırır.
+// Nakış: renksiz tabloyu iplerle içten dışa işle; can harcamaz, yeni tablolar para kazandırır.
 
 import { Api, getToken, setUnauthorizedHandler } from './api.js';
 import { initAuth, logout } from './auth.js';
@@ -11,7 +12,10 @@ import { getLevel } from './game/levels.js';
 import { randomSeed } from './game/rng.js';
 import { ShooterGame } from './shooter/game.js';
 import { getMainLevel } from './shooter/levels.js';
-import { renderHome, currentMainLevelId } from './screens/home.js';
+import { createNakisEngine } from './nakis/engine.js';
+import { NakisRenderer } from './nakis/renderer.js';
+import { getNakisLevel } from './nakis/levels.js';
+import { renderHome, currentMainLevelId, currentNakisLevelId } from './screens/home.js';
 import { renderHub, renderLevelMap } from './screens/hub.js';
 import { showQuickResult, showLevelResult } from './screens/result.js';
 import { showShooterResult } from './screens/shooterResult.js';
@@ -23,7 +27,8 @@ const screens = [...document.querySelectorAll('.screen')];
 let current = 'loading';
 let previous = null;
 let matchGame = null;   // Jöle Patlat oturumu
-let shooterGame = null; // Jöle Atış oturumu
+let shooterGame = null; // Jöle Atış / Nakış oturumu
+let shooterMode = 'main'; // 'main' | 'nakis'
 let shopReturn = 'home'; // dükkândan dönülecek ekran
 
 function show(name) {
@@ -128,25 +133,54 @@ async function goMain() {
     return;
   }
 
+  startTrackGame('main', {
+    level: getMainLevel(levelId),
+    boosters: Object.fromEntries(boosters.map((b) => [b, true])),
+  });
+}
+
+function shooterHud() {
+  return {
+    title: document.getElementById('shooter-title'),
+    progressFill: document.getElementById('shooter-progress'),
+    progressText: document.getElementById('shooter-progress-text'),
+    belt: document.getElementById('shooter-belt'),
+    hint: document.getElementById('shooter-hint'),
+  };
+}
+
+// Yol tabanlı oyunlar (Jöle Atış, Nakış) aynı ekranı ve kontrolcüyü kullanır
+function startTrackGame(mode, options) {
+  stopGames();
+  shooterMode = mode;
   show('shooter');
   shooterGame = new ShooterGame({
     canvas: document.getElementById('shooter-canvas'),
-    hud: {
-      title: document.getElementById('shooter-title'),
-      progressFill: document.getElementById('shooter-progress'),
-      progressText: document.getElementById('shooter-progress-text'),
-      belt: document.getElementById('shooter-belt'),
-      hint: document.getElementById('shooter-hint'),
-    },
-    level: getMainLevel(levelId),
-    boosters: Object.fromEntries(boosters.map((b) => [b, true])),
+    hud: shooterHud(),
+    ...options,
     onEnd: (result) => {
       shooterGame = null;
       show('shooter-result');
-      showShooterResult(result);
+      showShooterResult(result, mode);
     },
   });
   requestAnimationFrame(() => shooterGame?.start());
+}
+
+// ---------- Nakış ----------
+
+function playNakis() {
+  startTrackGame('nakis', {
+    level: getNakisLevel(currentNakisLevelId(getUser())),
+    engineFactory: createNakisEngine,
+    RendererClass: NakisRenderer,
+    texts: {
+      firstHint: 'Bir makaraya dokun: ip, en içteki kendi rengindeki hücreyi işler.',
+      levelHint: () => 'Soluk renklere bak ve en içten başla!',
+      stuck: 'Hiçbir ip yol bulamıyor!',
+      slots: 'Bekleme kutuları taştı!',
+    },
+  });
 }
 
 // ---------- Jöle Patlat ----------
@@ -278,7 +312,12 @@ document.addEventListener('click', (e) => {
       else goHub();
       break;
     case 'shooter-quit':
-      if (window.confirm('Bölümden çıkarsan bu bölüm için harcanan can geri gelmez. Çıkılsın mı?')) goHome();
+      // Nakış can harcamaz; Jöle Atış'ta çıkmak canı geri getirmez
+      if (shooterMode === 'nakis'
+        || window.confirm('Bölümden çıkarsan bu bölüm için harcanan can geri gelmez. Çıkılsın mı?')) goHome();
+      break;
+    case 'nakis-play':
+      playNakis();
       break;
     case 'logout':
       stopGames();

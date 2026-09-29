@@ -13,6 +13,9 @@ Tek kişilik, renkli jöle oyunları. Rakibin başka oyuncular değil, kendi rek
 - **Sandıklar:** 2, 4, 7, 11, 16. bölümlerde. Seyrekleşir ama değerlenir: Bronz → Gümüş → Altın → Elmas → Efsane.
 - **Dükkân:** paralarla can, güçlendirici (📦 Ekstra Kutu, ⭐ Süper Başlangıç) ve joker alınır.
 
+**Nakış:** Renksiz bir tabloyu (Yıldızlı Gece, Büyük Dalga, Ayçiçekleri …) renkli iplerle işle. Her hücrede olması gereken rengin soluk izi görünür. İp makaraları kaykay yolunda döner. İp, boyanmamış hücrelerin arasından labirent gibi yolunu bulur ve kendi rengindeki **en içteki** hücreyi çarpı işiyle işler. İşlenen hücreler yolu kapatır, bu yüzden yanlış renk "yapamaz" ve kutuya iner.
+- 10 tablo; zorluk simülasyonla ayarlandı. Can harcamaz, her yeni tablo para kazandırır.
+
 **Jöle Patlat (destek oyunu):** 8x8 eşleştirme (match-3). Can ve joker kazandırır.
 - **Hızlı Tur:** 60 saniye, Isı Barı ve Şeker Fırtınası. 1.500+ puan +1 can, 3.000+ puan +2 can.
 - **Bölümler:** 20 bölüm, hamle sınırı, hedefler ve 1–3 yıldız. Her galibiyet +1 can getirir, bölümler sırayla açılır.

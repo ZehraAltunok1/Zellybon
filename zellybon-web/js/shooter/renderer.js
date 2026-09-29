@@ -254,7 +254,6 @@ export class ShooterRenderer {
 
   draw() {
     const { ctx } = this;
-    const { state } = this.engine;
     const { x0, y0, boardW, boardH, cube, t, cssW, cssH, token } = this.L;
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
@@ -285,7 +284,31 @@ export class ShooterRenderer {
     roundRect(ctx, x0 - 3, y0 - 3, boardW + 6, boardH + 6, cube * 0.4);
     ctx.fill();
 
-    // Kazanınca: resmin tamamı parlayarak geri gelir
+    this._drawBoard();
+    this._drawHits();
+
+    // Yoldaki ve yola girmeyi bekleyen jöleler
+    const tokenScale = Math.min(1, (t * 1.05) / token);
+    this._drawMovers(tokenScale);
+    this._drawSlotsAndColumns();
+
+    // Parçacıklar
+    for (const p of this.particles) {
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  // Resim: kalan küpler; kazanınca resmin tamamı parlayarak geri gelir
+  _drawBoard() {
+    const { ctx } = this;
+    const { state } = this.engine;
+    const { x0, y0, cube } = this.L;
     let revealAlpha = 0;
     if (this.revealAt !== null) revealAlpha = Math.min(1, (this.time - this.revealAt) / 700);
 
@@ -302,8 +325,12 @@ export class ShooterRenderer {
       }));
       ctx.globalAlpha = 1;
     }
+  }
 
-    // Vurulan küpler: mermi uçar, küp küçülerek patlar
+  // Vurulan küpler: mermi uçar, küp küçülerek patlar
+  _drawHits() {
+    const { ctx } = this;
+    const { x0, y0, cube } = this.L;
     for (const d of this.dying) {
       const k = (this.time - d.t0) / 110;
       const c = this.cubeCenter(d.x, d.y);
@@ -323,9 +350,11 @@ export class ShooterRenderer {
         ctx.drawImage(this.cubeCache[d.color], c.x - s / 2, c.y - s / 2, s, s);
       }
     }
+  }
 
-    // Yoldaki ve yola girmeyi bekleyen jöleler
-    const tokenScale = Math.min(1, (t * 1.05) / token);
+  // Yoldaki ve yola girmeyi bekleyen jöleler
+  _drawMovers(tokenScale) {
+    const { state } = this.engine;
     for (const sh of state.pending) {
       const p = this.sourcePoint(sh.from);
       this._drawToken(sh, p.x, p.y, 1 + Math.sin(this.time / 90) * 0.05, 1);
@@ -340,8 +369,13 @@ export class ShooterRenderer {
       const k = (this.time - p.t0) / 250;
       this._drawToken({ color: p.color }, p.x, p.y, tokenScale * (1 + k * 0.6), 1 - k, false);
     }
+  }
 
-    // Bekleme kutuları
+  // Bekleme kutuları ve sütunlar (öndeki seçilebilir)
+  _drawSlotsAndColumns() {
+    const { ctx } = this;
+    const { state } = this.engine;
+    const { token } = this.L;
     const fullSlots = state.slots.every(Boolean);
     state.slots.forEach((sh, i) => {
       const r = this.slotRect(i);
@@ -376,16 +410,5 @@ export class ShooterRenderer {
         ctx.fillText(`+${col.length - VISIBLE_IN_COLUMN}`, p.x, p.y + token * 0.55);
       }
     });
-
-    // Parçacıklar
-    for (const p of this.particles) {
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 }

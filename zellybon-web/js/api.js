@@ -93,6 +93,9 @@ export const Api = {
     request('/main/start', { method: 'POST', body: { levelId, boosters } }),
   mainResult: (levelId, won) => request('/main/result', { method: 'POST', body: { levelId, won } }),
 
+  // Nakış
+  nakisResult: (levelId, won) => request('/nakis/result', { method: 'POST', body: { levelId, won } }),
+
   // Dükkân
   shop: () => request('/shop', { auth: false }),
   buy: (itemId) => request('/shop/buy', { method: 'POST', body: { itemId } }),

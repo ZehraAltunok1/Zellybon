@@ -13,6 +13,8 @@ export const PALETTE = {
   w: { name: 'Süt', light: '#FFFFFF', base: '#F3EEFF', dark: '#B9ABD9' },
   n: { name: 'Kola', light: '#D9A27A', base: '#A8643B', dark: '#6B3A1E' },
   k: { name: 'Mürdüm', light: '#8A77B8', base: '#4A3A78', dark: '#261A45' },
+  c: { name: 'Gök', light: '#C4EEFF', base: '#5CC8F2', dark: '#1E88B8' },
+  d: { name: 'Gece', light: '#7D8CE0', base: '#2F3F9E', dark: '#18215E' },
 };
 
 // Jöle Patlat'ın 6 rengi (0..5) paletteki bu anahtarlara karşılık gelir

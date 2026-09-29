@@ -1,7 +1,16 @@
-// Jöle Atış (ana oyun) kontrolcüsü: motor + çizim + dokunma + HUD.
+// Yol tabanlı oyunların kontrolcüsü: motor + çizim + dokunma + HUD.
+// Jöle Atış varsayılandır; Nakış kendi motorunu, çizimini ve metinlerini verir.
 
 import { createEngine } from './engine.js';
 import { ShooterRenderer } from './renderer.js';
+import { PALETTE } from '../palette.js';
+
+const SHOOTER_TEXTS = {
+  firstHint: 'Bir jöleye dokun: yola çıkar ve kendi rengindeki küpleri vurur!',
+  levelHint: (level) => `Bölüm ${level.id}: tüm küpleri temizle!`,
+  stuck: 'Hiçbir jöle küp vuramıyor!',
+  slots: 'Bekleme kutuları taştı!',
+};
 
 export class ShooterGame {
   /**
@@ -10,33 +19,38 @@ export class ShooterGame {
    *   hud: { title: HTMLElement, progressFill: HTMLElement, progressText: HTMLElement,
    *          belt: HTMLElement, hint: HTMLElement },
    *   level: object,
+   *   boosters?: object,
+   *   engineFactory?: (level: object, opts: object) => object,
+   *   RendererClass?: typeof ShooterRenderer,
+   *   texts?: Partial<typeof SHOOTER_TEXTS>,
    *   onEnd: (result: { levelId: number, won: boolean, reason: string|null, durationMs: number }) => void,
    * }} opts
    */
-  constructor({ canvas, hud, level, boosters = {}, onEnd }) {
+  constructor({
+    canvas, hud, level, boosters = {}, engineFactory = createEngine, RendererClass = ShooterRenderer,
+    texts = {}, onEnd,
+  }) {
     this.canvas = canvas;
     this.hud = hud;
     this.level = level;
     this.boosters = boosters;
+    this.engineFactory = engineFactory;
+    this.RendererClass = RendererClass;
+    this.texts = { ...SHOOTER_TEXTS, ...texts };
     this.onEnd = onEnd;
     this._onResize = () => this.renderer.resize();
     this._onPointer = (e) => this._pointer(e);
   }
 
   start() {
-    this.engine = createEngine(this.level, { boosters: this.boosters });
-    this.renderer = new ShooterRenderer(this.canvas, this.engine);
+    this.engine = this.engineFactory(this.level, { boosters: this.boosters });
+    this.renderer = new this.RendererClass(this.canvas, this.engine);
     this.renderer.resize();
     this.ended = false;
     this.clock = 0;
 
     this.hud.title.textContent = `Bölüm ${this.level.id} · ${this.level.name}`;
-    this._hint(
-      this.level.id === 1
-        ? 'Bir jöleye dokun: yola çıkar ve kendi rengindeki küpleri vurur!'
-        : `Bölüm ${this.level.id}: tüm küpleri temizle!`,
-      3000,
-    );
+    this._hint(this.level.tip ?? (this.level.id === 1 ? this.texts.firstHint : this.texts.levelHint(this.level)), 3500);
     this.canvas.addEventListener('pointerdown', this._onPointer);
     window.addEventListener('resize', this._onResize);
 
@@ -69,6 +83,8 @@ export class ShooterGame {
       for (const ev of events) {
         if (ev.type === 'toSlot' && this.engine.state.slots.every(Boolean)) {
           this._hint('Dikkat: bekleme kutuları doldu!', 2200);
+        } else if (ev.type === 'colorDone') {
+          this._hint(`${PALETTE[ev.color]?.name ?? 'Renk'} tamamlandı ✓`, 1500);
         }
       }
       const { status } = this.engine.state;
@@ -113,8 +129,7 @@ export class ShooterGame {
     this.ended = true;
     const reason = this.engine.state.loseReason;
     if (won) this._hint(`${this.level.name} tamamlandı!`, 0);
-    else if (reason === 'stuck') this._hint('Hiçbir jöle küp vuramıyor!', 0);
-    else this._hint('Bekleme kutuları taştı!', 0);
+    else this._hint(reason === 'stuck' ? this.texts.stuck : this.texts.slots, 0);
     this._endTimer = setTimeout(() => {
       this.destroy();
       this.onEnd({ levelId: this.level.id, won, reason, durationMs: Math.round(this.clock) });

@@ -6,6 +6,7 @@ import levelRoutes from './routes/levels.js';
 import jokerRoutes from './routes/jokers.js';
 import mainRoutes from './routes/main.js';
 import shopRoutes from './routes/shop.js';
+import nakisRoutes from './routes/nakis.js';
 import requireAuth from './middleware/requireAuth.js';
 import User from './models/User.js';
 import { syncLives } from './rewards.js';
@@ -32,6 +33,7 @@ export function createApp({ corsOrigin = '' } = {}) {
   app.use('/api', jokerRoutes);
   app.use('/api', mainRoutes);
   app.use('/api', shopRoutes);
+  app.use('/api', nakisRoutes);
 
   app.get('/api/me', requireAuth, async (req, res, next) => {
     try {

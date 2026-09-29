@@ -1,4 +1,5 @@
 import { MAIN_LEVELS } from '../shooter/levels.js';
+import { NAKIS_LEVELS } from '../nakis/levels.js';
 import { CHEST_NAMES } from '../economy.js';
 
 export function renderHome(user) {
@@ -14,6 +15,12 @@ export function renderHome(user) {
     const level = MAIN_LEVELS[user.mainLevel - 1];
     el.textContent = `Bölüm ${level.id} · ${level.name}`;
   }
+
+  const nakisEl = document.getElementById('home-nakis-level');
+  const nakis = user.nakisLevel ?? 1;
+  nakisEl.textContent = nakis > NAKIS_LEVELS.length
+    ? `🏆 ${NAKIS_LEVELS.length} tablonun hepsi işlendi!`
+    : `Tablo ${nakis} · ${NAKIS_LEVELS[nakis - 1].name}`;
 
   // Sonraki sandığa ilerleme
   const chestEl = document.getElementById('home-chest');
@@ -31,4 +38,9 @@ export function renderHome(user) {
 /** Oynanacak ana oyun bölümü: açılmış en yüksek bölüm (hepsi bittiyse sonuncusu). */
 export function currentMainLevelId(user) {
   return Math.min(user.mainLevel, MAIN_LEVELS.length);
+}
+
+/** Oynanacak Nakış tablosu. */
+export function currentNakisLevelId(user) {
+  return Math.min(user.nakisLevel ?? 1, NAKIS_LEVELS.length);
 }

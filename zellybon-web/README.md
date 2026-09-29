@@ -39,6 +39,9 @@ npm test
 | `js/shooter/engine.js` | Jöle Atış kuralları: yol, atış, bekleme kutuları (DOM'suz) |
 | `js/shooter/renderer.js` | Jöle Atış çizimi ve animasyonları |
 | `js/shooter/game.js` | Jöle Atış kontrolcüsü |
+| `js/nakis/levels.js` | Nakış tabloları |
+| `js/nakis/engine.js` | Nakış kuralları: içten dışa işleme, labirent yolu, yolu kesmeme (DOM'suz) |
+| `js/nakis/renderer.js` | Kanaviçe, çarpı işi, ilerleyen ip ve makara çizimi |
 | `js/game/rng.js` | Seed'li rastgele üreteç (mulberry32) |
 | `js/game/board.js` | Jöle Patlat tahtası: eşleşme, düşme, joker patlatması (DOM'suz) |
 | `js/game/scoring.js` | Puan, kombo, Isı Barı / Şeker Fırtınası (DOM'suz) |
