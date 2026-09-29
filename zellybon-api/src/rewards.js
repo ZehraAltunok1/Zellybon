@@ -3,11 +3,13 @@
 
 export const JOKER_TYPES = ['hammer', 'shuffle', 'colorBomb', 'hourglass'];     // Jöle Patlat
 export const BOOSTER_TYPES = ['extraSlot', 'superStart'];                      // Jöle Atış
+export const NAKIS_JOKER_TYPES = ['scissors', 'needle', 'box', 'magnet'];       // Nakış
 export const STARTING_JOKERS = { hammer: 1, shuffle: 1, colorBomb: 1, hourglass: 1 };
 export const STARTING_BOOSTERS = { extraSlot: 1, superStart: 1 };
+export const STARTING_NAKIS_JOKERS = { scissors: 2, needle: 2, box: 2, magnet: 2 };
 export const MATCH_LEVEL_COUNT = 20; // Jöle Patlat bölümleri
 export const MAIN_LEVEL_COUNT = 20;  // Jöle Atış bölümleri
-export const NAKIS_LEVEL_COUNT = 10; // Nakış tabloları
+export const NAKIS_LEVEL_COUNT = 24; // Nakış tabloları
 
 export const LIVES_MAX = 5;
 export const LIFE_REGEN_MS = 5 * 60 * 1000;
@@ -89,7 +91,21 @@ export const SHOP_ITEMS = [
   { id: 'shuffle', name: 'Karıştır', grant: { shuffle: 1 }, price: 30 },
   { id: 'hourglass', name: 'Kum Saati', grant: { hourglass: 1 }, price: 50 },
   { id: 'colorBomb', name: 'Renk Bombası', grant: { colorBomb: 1 }, price: 80 },
+  { id: 'scissors', name: 'Makas', grant: { scissors: 1 }, price: 30 },
+  { id: 'needle', name: 'Sihirli İğne', grant: { needle: 1 }, price: 50 },
+  { id: 'box', name: 'Ekstra Kutu (Nakış)', grant: { box: 1 }, price: 40 },
+  { id: 'magnet', name: 'Mıknatıs', grant: { magnet: 1 }, price: 40 },
 ];
+
+/** Nakış tablosu ilk kez tamamlanınca: para, her 3 tabloda bir de rastgele bir Nakış jokeri. */
+export function nakisRewards(levelId, random = Math.random) {
+  const rewards = [{ type: 'coins', count: nakisLevelCoins(levelId), reason: `Tablo ${levelId} tamamlandı` }];
+  if (levelId % 3 === 0) {
+    const type = NAKIS_JOKER_TYPES[Math.floor(random() * NAKIS_JOKER_TYPES.length)];
+    rewards.push({ type, count: 1, reason: `Tablo ${levelId} hediyesi` });
+  }
+  return rewards;
+}
 
 // ---------- Ödül kuralları ----------
 
@@ -170,6 +186,8 @@ export function applyRewards(user, rewards, now = Date.now()) {
       user.jokers[r.type] = (user.jokers[r.type] ?? 0) + r.count;
     } else if (BOOSTER_TYPES.includes(r.type)) {
       user.boosters[r.type] = (user.boosters[r.type] ?? 0) + r.count;
+    } else if (NAKIS_JOKER_TYPES.includes(r.type)) {
+      user.nakisJokers[r.type] = (user.nakisJokers[r.type] ?? 0) + r.count;
     }
   }
 }

@@ -67,7 +67,7 @@ export function computeDepth(grid) {
  * Makaraları üretir: her renk, o renkteki hücre sayısı kadar ipe ihtiyaç duyar; ipler eşit uzunlukta
  * makaralara bölünür (son makarada fazla ip kalabilir). Makaralar içten dışa sıralanır, `shuffle` kadar sapar.
  */
-export function buildSpoolColumns(level, seed = `nakis-${level.id}`) {
+export function buildSpoolColumns(level, seed = level.seed ?? `nakis-${level.id}`) {
   const rng = createRng(seed);
   const grid = parseArt(level.art);
   const depth = computeDepth(grid);
@@ -339,5 +339,73 @@ export function createNakisEngine(level, { seed } = {}) {
     return events;
   }
 
-  return { state, step, launchFromColumn, launchFromSlot, canLaunch, beltCount, canStitchColor, findStitch };
+  // ---------- Jokerler ----------
+
+  /** Makas: kutudaki ya da sütun başındaki bir makarayı atar. */
+  function discard(target) {
+    if (state.status !== 'playing') return [];
+    let sp = null;
+    if (target.type === 'slot') {
+      sp = state.slots[target.index];
+      if (sp) state.slots[target.index] = null;
+    } else {
+      sp = state.columns[target.index]?.shift() ?? null;
+    }
+    return sp ? [{ type: 'retire', shooter: sp, from: target }] : [];
+  }
+
+  /** Ekstra Kutu: bu bölüm için +1 bekleme kutusu. */
+  function addSlot() {
+    state.slots.push(null);
+  }
+
+  /** Sihirli İğne: en içteki `count` hücreyi doğru renkleriyle işler. */
+  function autoStitch(count) {
+    const events = [];
+    for (let k = 0; k < count && state.cubesLeft > 0; k++) {
+      // Tablonun en içteki, güvenle işlenebilecek hücresinin rengi
+      let best = null;
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (!grid[y][x] || painted[y][x]) continue;
+          if (best && depth[y][x] <= best.d) continue;
+          if (safeToPaint(x, y)) best = { color: grid[y][x], d: depth[y][x] };
+        }
+      }
+      if (!best) break;
+      // Bu renk için hücreye ulaşan bir şerit bul
+      let done = false;
+      for (let p = 0; p < L && !done; p++) {
+        const found = findStitch(best.color, p);
+        if (!found) continue;
+        const { x, y } = found.cell;
+        painted[y][x] = true;
+        state.cubesLeft--;
+        left[best.color]--;
+        events.push({ type: 'hit', shooter: null, lane: p, cube: found.cell, color: best.color, path: found.path });
+        if (!left[best.color]) retireColor(best.color, events);
+        done = true;
+      }
+      if (!done) break;
+    }
+    return events;
+  }
+
+  /** Mıknatıs: her sütunda şu an işe yarayacak ilk makarayı en öne çeker. */
+  function sortColumns() {
+    let moved = 0;
+    for (const col of state.columns) {
+      const i = col.findIndex((sp) => canStitchColor(sp.color));
+      if (i > 0) {
+        col.unshift(...col.splice(i, 1));
+        moved++;
+      }
+    }
+    return moved;
+  }
+
+  return {
+    state, step, launchFromColumn, launchFromSlot, canLaunch, beltCount, canStitchColor, findStitch,
+    discard, addSlot, autoStitch, sortColumns,
+  };
 }

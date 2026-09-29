@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
-import { STARTING_JOKERS, STARTING_BOOSTERS, LIVES_MAX, livesInfo, nextChest } from '../rewards.js';
+import {
+  STARTING_JOKERS, STARTING_BOOSTERS, STARTING_NAKIS_JOKERS, LIVES_MAX, livesInfo, nextChest,
+} from '../rewards.js';
 
 const levelProgressSchema = new mongoose.Schema(
   {
@@ -37,6 +39,12 @@ const userSchema = new mongoose.Schema({
 
   // Nakış
   nakisLevel: { type: Number, default: 1 }, // açılmış en yüksek tablo
+  nakisJokers: {
+    scissors: counter(STARTING_NAKIS_JOKERS.scissors),
+    needle: counter(STARTING_NAKIS_JOKERS.needle),
+    box: counter(STARTING_NAKIS_JOKERS.box),
+    magnet: counter(STARTING_NAKIS_JOKERS.magnet),
+  },
 
   // Jöle Patlat
   jokers: {
@@ -81,6 +89,12 @@ userSchema.methods.toPublic = function toPublic() {
     mainLevel: this.mainLevel,
     nextChest: nextChest(this.mainLevel),
     nakisLevel: this.nakisLevel ?? 1,
+    nakisJokers: {
+      scissors: this.nakisJokers?.scissors ?? 0,
+      needle: this.nakisJokers?.needle ?? 0,
+      box: this.nakisJokers?.box ?? 0,
+      magnet: this.nakisJokers?.magnet ?? 0,
+    },
     lives: livesInfo(this),
     boosters: this.publicBoosters(),
     jokers: this.publicJokers(),

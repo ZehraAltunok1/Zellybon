@@ -32,6 +32,48 @@
 .chest-line[hidden] { display: none; }
 .lives-card[hidden] { display: none; }
 
+/* Nakış tablo haritası */
+.nakis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 24px; }
+
+.nakis-tile {
+  position: relative;
+  font: inherit;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 6px;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(38, 26, 69, 0.35);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.nakis-tile:active { transform: scale(0.95); }
+.nakis-tile.current { border-color: #FFC233; box-shadow: 0 0 18px rgba(255, 194, 51, 0.45); animation: pulse 1.8s ease-in-out infinite; }
+.nakis-tile.done { background: rgba(56, 211, 159, 0.2); border-color: rgba(56, 211, 159, 0.7); }
+.nakis-tile.locked { cursor: default; opacity: 0.75; }
+.nakis-tile-label { font-size: 0.78rem; font-weight: 700; line-height: 1.1; text-align: center; }
+.nakis-lock { position: absolute; top: 34px; font-size: 1.6rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)); }
+
+.nakis-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #38D39F;
+  border: 2px solid #FFFFFF;
+  font-weight: 800;
+}
+
+.joker-bar[hidden] { display: none; }
+
 /* Nakış kartı: kanaviçe dokusu */
 .game-card-nakis {
   background:

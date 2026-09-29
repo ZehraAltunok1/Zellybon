@@ -8,7 +8,7 @@ let catalog = null;
 
 function ownedCount(user, id) {
   if (id === 'life1' || id === 'lifeFull') return `${user.lives.lives}/${user.lives.max}`;
-  return String(user.boosters?.[id] ?? user.jokers?.[id] ?? 0);
+  return String(user.boosters?.[id] ?? user.nakisJokers?.[id] ?? user.jokers?.[id] ?? 0);
 }
 
 export async function showShop() {

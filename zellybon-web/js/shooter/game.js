@@ -23,13 +23,22 @@ export class ShooterGame {
    *   engineFactory?: (level: object, opts: object) => object,
    *   RendererClass?: typeof ShooterRenderer,
    *   texts?: Partial<typeof SHOOTER_TEXTS>,
+   *   jokers?: {
+   *     list: { id: string, name: string, icon: string, targeted: boolean, desc: string, hint?: string }[],
+   *     inventory: () => Record<string, number>,
+   *     consume: (id: string) => Promise<void>,
+   *     apply: (id: string, engine: object, target?: object) => { events: object[], message: string, relayout?: boolean },
+   *   } | null,
    *   onEnd: (result: { levelId: number, won: boolean, reason: string|null, durationMs: number }) => void,
    * }} opts
    */
   constructor({
     canvas, hud, level, boosters = {}, engineFactory = createEngine, RendererClass = ShooterRenderer,
-    texts = {}, onEnd,
+    texts = {}, jokers = null, onEnd,
   }) {
+    this.jokers = jokers;
+    this.targeting = null;
+    this.busy = false;
     this.canvas = canvas;
     this.hud = hud;
     this.level = level;
@@ -53,6 +62,7 @@ export class ShooterGame {
     this._hint(this.level.tip ?? (this.level.id === 1 ? this.texts.firstHint : this.texts.levelHint(this.level)), 3500);
     this.canvas.addEventListener('pointerdown', this._onPointer);
     window.addEventListener('resize', this._onResize);
+    this._buildJokerBar();
 
     let last = performance.now();
     const loop = (now) => {
@@ -111,9 +121,96 @@ export class ShooterGame {
     if (text && ms) this._hintTimer = setTimeout(() => el.classList.remove('visible'), ms);
   }
 
+  // ---------- Jokerler ----------
+
+  _buildJokerBar() {
+    const bar = this.hud.jokerBar;
+    if (!bar) return;
+    bar.replaceChildren();
+    bar.hidden = !this.jokers;
+    if (!this.jokers) return;
+    this._jokerButtons = {};
+    for (const j of this.jokers.list) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'joker-btn';
+      btn.title = `${j.name}: ${j.desc}`;
+      btn.setAttribute('aria-label', j.name);
+      const icon = document.createElement('span');
+      icon.className = 'joker-icon';
+      icon.textContent = j.icon;
+      const count = document.createElement('span');
+      count.className = 'joker-count';
+      btn.append(icon, count);
+      btn.addEventListener('click', () => this.activateJoker(j));
+      bar.appendChild(btn);
+      this._jokerButtons[j.id] = { btn, count };
+    }
+    this._refreshJokers();
+  }
+
+  _refreshJokers() {
+    if (!this.jokers) return;
+    const inv = this.jokers.inventory();
+    for (const [id, { btn, count }] of Object.entries(this._jokerButtons)) {
+      const n = inv[id] ?? 0;
+      count.textContent = String(n);
+      btn.classList.toggle('empty', n <= 0);
+      btn.classList.toggle('active', this.targeting?.id === id);
+    }
+  }
+
+  async activateJoker(joker) {
+    if (this.ended || this.busy) return;
+    if (this.targeting?.id === joker.id) {
+      this.targeting = null;
+      this._refreshJokers();
+      this._hint('');
+      return;
+    }
+    if ((this.jokers.inventory()[joker.id] ?? 0) <= 0) {
+      this._hint(`${joker.name} kalmadı. Dükkândan ya da ödüllerden kazanabilirsin.`, 2500);
+      return;
+    }
+    if (joker.targeted) {
+      this.targeting = joker;
+      this._refreshJokers();
+      this._hint(joker.hint, 0);
+      return;
+    }
+    await this._useJoker(joker);
+  }
+
+  async _useJoker(joker, target) {
+    this.targeting = null;
+    this.busy = true;
+    try {
+      await this.jokers.consume(joker.id);
+    } catch (err) {
+      this._hint(err.message, 2500);
+      this.busy = false;
+      this._refreshJokers();
+      return;
+    }
+    this.busy = false;
+    if (this.ended) return;
+    const { events, message, relayout } = this.jokers.apply(joker.id, this.engine, target);
+    if (relayout) this.renderer.resize();
+    this.renderer.handle(events);
+    this._hint(message, 1800);
+    this._refreshJokers();
+  }
+
   _pointer(e) {
     if (this.ended) return;
     const target = this.renderer.hitTest(e.clientX, e.clientY);
+    if (this.targeting) {
+      if (target) {
+        e.preventDefault();
+        this._useJoker(this.targeting, target);
+      }
+      return;
+    }
     if (!target) return;
     e.preventDefault();
     if (!this.engine.canLaunch()) {
@@ -127,6 +224,7 @@ export class ShooterGame {
   _finish(won) {
     if (this.ended) return;
     this.ended = true;
+    this.targeting = null;
     const reason = this.engine.state.loseReason;
     if (won) this._hint(`${this.level.name} tamamlandı!`, 0);
     else this._hint(reason === 'stuck' ? this.texts.stuck : this.texts.slots, 0);

@@ -3,8 +3,11 @@
 //
 // spool: her makaradaki ip uzunluğu (hepsi aynı), slots: bekleme kutusu, columns: makara sütunu,
 // belt: yoldaki en fazla makara, shuffle: makara sırasının ne kadar karışık olduğu (0 = en kolay),
-// slack: en içteki katmanın kaç katman dışına kadar işlenebileceği.
+// slack: en içteki katmanın kaç katman dışına kadar işlenebileceği,
+// seed: makara diziliminin tohumu (bölüm numarası değişse de ayarlanan dizilim korunur).
 // Değerler simülasyonla ayarlandı: rastgele oynayan birinin kazanma oranı %100'den %38'e iner.
+
+import { MAIN_LEVELS } from '../shooter/levels.js';
 
 export const NAKIS_LEVELS = [
   {
@@ -162,6 +165,96 @@ export const NAKIS_LEVELS = [
       'kknnnnnnnnnnnnnn',
     ],
   },
+  // 11–24: yeni tablolar (bazı resimler Jöle Atış'tan), ölçülen zorluğa göre kolaydan zora
+  { id: 11, name: 'Kaktüs', spool: 6, slots: 4, columns: 3, belt: 3, shuffle: 0, slack: 1, seed: 'nakis-23', art: artOf('Kaktüs') },
+  { id: 12, name: 'Mantar', spool: 6, slots: 3, columns: 3, belt: 3, shuffle: 4, slack: 1, seed: 'nakis-11', art: artOf('Mantar') },
+  { id: 13, name: 'Roket', spool: 6, slots: 3, columns: 4, belt: 4, shuffle: 0, slack: 1, seed: 'nakis-22', art: artOf('Roket') },
+  { id: 14, name: 'Balık', spool: 8, slots: 3, columns: 4, belt: 3, shuffle: 4, slack: 1, seed: 'nakis-15', art: artOf('Balık') },
+  { id: 15, name: 'Karpuz', spool: 8, slots: 3, columns: 3, belt: 3, shuffle: 4, slack: 1, seed: 'nakis-16', art: artOf('Karpuz') },
+  {
+    id: 16, name: 'Nazar Boncuğu', spool: 6, slots: 4, columns: 3, belt: 3, shuffle: 0, slack: 1, seed: 'nakis-12',
+    art: [
+      '...ddddd...',
+      '..ddddddd..',
+      '.ddwwwwwdd.',
+      'ddwwcccwwdd',
+      'ddwcckccwdd',
+      'ddwckkkcwdd',
+      'ddwcckccwdd',
+      'ddwwcccwwdd',
+      '.ddwwwwwdd.',
+      '..ddddddd..',
+      '...ddddd...',
+    ],
+  },
+  { id: 17, name: 'Kedi', spool: 8, slots: 3, columns: 3, belt: 3, shuffle: 0, slack: 1, seed: 'nakis-13', art: artOf('Kedi') },
+  {
+    id: 18, name: 'Lale', spool: 6, slots: 3, columns: 3, belt: 3, shuffle: 4, slack: 2, seed: 'nakis-14',
+    art: [
+      '..r..r..r..',
+      '..rr.r.rr..',
+      '..rrrrrrr..',
+      '..rrirrir..',
+      '..rrrirrr..',
+      '...rrrrr...',
+      '....rrr....',
+      '.....g.....',
+      '.g...g...g.',
+      '.gg..g..gg.',
+      '..gg.g.gg..',
+      '...ggggg...',
+      '....ggg....',
+      '.....g.....',
+    ],
+  },
+  { id: 19, name: 'Kek', spool: 8, slots: 4, columns: 4, belt: 3, shuffle: 0, slack: 1, seed: 'nakis-17', art: artOf('Kek') },
+  { id: 20, name: 'Kelebek', spool: 8, slots: 4, columns: 4, belt: 3, shuffle: 4, slack: 1, seed: 'nakis-18', art: artOf('Kelebek') },
+  {
+    id: 21, name: 'Kız Kulesi', spool: 8, slots: 4, columns: 3, belt: 4, shuffle: 2, slack: 1, seed: 'nakis-19',
+    art: [
+      'oooooooooooooo',
+      'ooooooroooyooo',
+      'yyyyyrrryyyyyy',
+      'yyyyywwwyyyyyy',
+      'yyyyywkwyyyyyy',
+      'cccccwwwcccccc',
+      'ccccrwwwrccccc',
+      'ccccwwkwwccccc',
+      'ccccwwwwwccccc',
+      'cccnnwwwnnnccc',
+      'bbnnnnnnnnnnbb',
+      'bbbbnnnnnnbbbb',
+      'bbwbbbbbbbbwbb',
+      'bbbbbbwbbbbbbb',
+    ],
+  },
+  { id: 22, name: 'Ahtapot', spool: 8, slots: 3, columns: 4, belt: 4, shuffle: 4, slack: 1, seed: 'nakis-21', art: artOf('Ahtapot') },
+  { id: 23, name: 'Penguen', spool: 8, slots: 3, columns: 3, belt: 3, shuffle: 4, slack: 1, seed: 'nakis-20', art: artOf('Penguen') },
+  {
+    id: 24, name: 'Çığlık', spool: 8, slots: 4, columns: 3, belt: 4, shuffle: 0, slack: 1, seed: 'nakis-24',
+    art: [
+      'oorrroooorrroo',
+      'rroooyyyooorrr',
+      'ooyyyoooyyyooo',
+      'bbboooyyooobbb',
+      'bbbbbbooobbbbd',
+      'nbbbbbbbbbbbdd',
+      'nnbbbbwwwbbddd',
+      'nnnbbwkwkwbddd',
+      'nnnnbwwkwwbddd',
+      'nnnnnbwwwbdddd',
+      'nnnnnnkkkddddd',
+      'nnnnnkkkkkdddd',
+      'nnnnnkkkkkdddd',
+      'nnnnnnkkkndddd',
+    ],
+  },
 ];
+
+function artOf(name) {
+  const level = MAIN_LEVELS.find((l) => l.name === name);
+  if (!level) throw new Error(`Jöle Atış'ta '${name}' resmi yok`);
+  return level.art;
+}
 
 export const getNakisLevel = (id) => NAKIS_LEVELS.find((l) => l.id === id) ?? null;

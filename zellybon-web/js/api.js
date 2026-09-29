@@ -95,6 +95,7 @@ export const Api = {
 
   // Nakış
   nakisResult: (levelId, won) => request('/nakis/result', { method: 'POST', body: { levelId, won } }),
+  nakisJoker: (type) => request('/nakis/jokers/use', { method: 'POST', body: { type } }),
 
   // Dükkân
   shop: () => request('/shop', { auth: false }),

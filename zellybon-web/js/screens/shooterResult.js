@@ -71,6 +71,14 @@ export async function showShooterResult(result, mode = 'main') {
 
   nextBtn.dataset.action = cfg.play;
   retryBtn.dataset.action = cfg.play;
+  // Nakış'ta eski bir tablo tekrar oynanabilir: butonlar hangi tabloyu açacaklarını bilir
+  if (mode === 'nakis') {
+    nextBtn.dataset.level = String(result.levelId + 1);
+    retryBtn.dataset.level = String(result.levelId);
+  } else {
+    delete nextBtn.dataset.level;
+    delete retryBtn.dataset.level;
+  }
   livesCard.hidden = !cfg.usesLives;
   confetti.replaceChildren();
   picture.hidden = !result.won;

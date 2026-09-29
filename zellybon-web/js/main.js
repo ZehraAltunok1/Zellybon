@@ -15,6 +15,8 @@ import { getMainLevel } from './shooter/levels.js';
 import { createNakisEngine } from './nakis/engine.js';
 import { NakisRenderer } from './nakis/renderer.js';
 import { getNakisLevel } from './nakis/levels.js';
+import { NAKIS_JOKERS, applyNakisJoker } from './nakis/jokers.js';
+import { renderNakisMap } from './screens/nakisMap.js';
 import { renderHome, currentMainLevelId, currentNakisLevelId } from './screens/home.js';
 import { renderHub, renderLevelMap } from './screens/hub.js';
 import { showQuickResult, showLevelResult } from './screens/result.js';
@@ -146,6 +148,7 @@ function shooterHud() {
     progressText: document.getElementById('shooter-progress-text'),
     belt: document.getElementById('shooter-belt'),
     hint: document.getElementById('shooter-hint'),
+    jokerBar: document.getElementById('shooter-jokers'),
   };
 }
 
@@ -169,11 +172,27 @@ function startTrackGame(mode, options) {
 
 // ---------- Nakış ----------
 
-function playNakis() {
+function goNakisMap() {
+  stopGames();
+  show('nakis-map');
+  renderNakisMap(getUser(), playNakis);
+}
+
+const nakisJokerApi = {
+  list: NAKIS_JOKERS,
+  inventory: () => getUser()?.nakisJokers ?? {},
+  async consume(type) {
+    setUser((await Api.nakisJoker(type)).user);
+  },
+  apply: applyNakisJoker,
+};
+
+function playNakis(levelId = currentNakisLevelId(getUser())) {
   startTrackGame('nakis', {
-    level: getNakisLevel(currentNakisLevelId(getUser())),
+    level: getNakisLevel(levelId),
     engineFactory: createNakisEngine,
     RendererClass: NakisRenderer,
+    jokers: nakisJokerApi,
     texts: {
       firstHint: 'Bir makaraya dokun: ip, en içteki kendi rengindeki hücreyi işler.',
       levelHint: () => 'Soluk renklere bak ve en içten başla!',
@@ -313,11 +332,14 @@ document.addEventListener('click', (e) => {
       break;
     case 'shooter-quit':
       // Nakış can harcamaz; Jöle Atış'ta çıkmak canı geri getirmez
-      if (shooterMode === 'nakis'
-        || window.confirm('Bölümden çıkarsan bu bölüm için harcanan can geri gelmez. Çıkılsın mı?')) goHome();
+      if (shooterMode === 'nakis') goNakisMap();
+      else if (window.confirm('Bölümden çıkarsan bu bölüm için harcanan can geri gelmez. Çıkılsın mı?')) goHome();
       break;
     case 'nakis-play':
-      playNakis();
+      playNakis(Number(btn.dataset.level) || undefined);
+      break;
+    case 'nakis-map':
+      goNakisMap();
       break;
     case 'logout':
       stopGames();

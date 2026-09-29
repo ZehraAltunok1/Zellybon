@@ -107,6 +107,37 @@ test('Nakış: hiçbir hücre, diğerlerinin dışarıyla bağlantısını kesec
   assert.equal(e.canStitchColor('y'), true);
 });
 
+test('Nakış jokerleri: Makas, Ekstra Kutu, Sihirli İğne ve Mıknatıs', () => {
+  const level = NAKIS_LEVELS[1]; // Hedef: iç içe halkalar
+  const e = createNakisEngine(level);
+  const { state } = e;
+
+  // Makas: sütun başındaki makarayı atar
+  const front = state.columns[0][0];
+  const ev = e.discard({ type: 'column', index: 0 });
+  assert.equal(ev[0].type, 'retire');
+  assert.notEqual(state.columns[0][0], front);
+
+  // Ekstra Kutu
+  const slots = state.slots.length;
+  e.addSlot();
+  assert.equal(state.slots.length, slots + 1);
+
+  // Sihirli İğne: en içteki hücreler doğru renkle işlenir (merkez turuncu önce)
+  const before = state.cubesLeft;
+  const hits = e.autoStitch(5).filter((x) => x.type === 'hit');
+  assert.equal(hits.length, 5);
+  assert.equal(state.cubesLeft, before - 5);
+  assert.deepEqual(hits[0].cube, { x: 4, y: 4 });
+  for (const h of hits) assert.equal(state.grid[h.cube.y][h.cube.x], h.color);
+
+  // Mıknatıs: her sütunun başına işe yarayan makara gelir
+  e.sortColumns();
+  for (const col of state.columns) {
+    if (col.some((sp) => e.canStitchColor(sp.color))) assert.ok(e.canStitchColor(col[0].color));
+  }
+});
+
 test('Nakış: her tablo kazanılabilir (otomatik oyuncu tüm tabloyu işliyor)', () => {
   for (const level of NAKIS_LEVELS) {
     const state = autoplayNakis(level);

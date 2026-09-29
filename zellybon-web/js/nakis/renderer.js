@@ -1,5 +1,5 @@
-// Nakış çizimi: kanaviçe kumaşı üzerinde soluk tablo, çarpı işi ilmekler, labirentte ilerleyen ip
-// ve ip makaraları. Yol, kutular ve sütunlar Jöle Atış çizimiyle ortaktır.
+// Nakış çizimi: kanaviçe kumaşı üzerinde soluk tablo, bükümlü iplikten çarpı işi ilmekler,
+// ucunda iğneyle labirentte ilerleyen ip ve ip makaraları. Yol, kutular ve sütunlar Jöle Atış ile ortaktır.
 
 import { ShooterRenderer } from '../shooter/renderer.js';
 import { PALETTE, rgba } from '../palette.js';
@@ -7,6 +7,7 @@ import { PALETTE, rgba } from '../palette.js';
 const FABRIC = '#F4EEE3';
 const FABRIC_DARK = '#D9CDB8';
 const THREAD_MS_PER_CELL = 38;
+const TAU = Math.PI * 2;
 
 function fabric(g, s) {
   g.fillStyle = FABRIC;
@@ -16,8 +17,56 @@ function fabric(g, s) {
   const r = Math.max(0.6, s * 0.045);
   for (const [fx, fy] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
     g.beginPath();
-    g.arc(fx * s, fy * s, r, 0, Math.PI * 2);
+    g.arc(fx * s, fy * s, r, 0, TAU);
     g.fill();
+  }
+}
+
+/**
+ * Bükümlü iplik teli: gölge → koyu kenar → ana renk → büküm çizgileri (açık) ve oyukları (koyu).
+ * Aynı fonksiyon hem ilmekler hem de ilerleyen ip için kullanılır.
+ */
+function strand(g, x1, y1, x2, y2, w, pal, { shadow = true, twistPhase = 0 } = {}) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  g.lineCap = 'round';
+  const line = (width, style, ox = 0, oy = 0) => {
+    g.lineWidth = width;
+    g.strokeStyle = style;
+    g.beginPath();
+    g.moveTo(x1 + ox, y1 + oy);
+    g.lineTo(x2 + ox, y2 + oy);
+    g.stroke();
+  };
+  if (shadow) line(w, 'rgba(40, 20, 10, 0.28)', w * 0.12, w * 0.18);
+  line(w, pal.dark);
+  line(w * 0.74, pal.base);
+  // Büküm: tele çapraz kısa çizgiler (ipliğin katları)
+  const step = w * 0.52;
+  const nx = -uy;
+  const ny = ux;
+  const half = w * 0.3;
+  for (let t = (twistPhase % step) + step * 0.3; t < len - step * 0.2; t += step) {
+    const cx = x1 + ux * t;
+    const cy = y1 + uy * t;
+    // çizgi, tele dik yönle ilerleme yönü arasında eğik durur
+    const ax = nx * half - ux * half * 0.8;
+    const ay = ny * half - uy * half * 0.8;
+    g.lineWidth = Math.max(0.8, w * 0.16);
+    g.strokeStyle = rgba(pal.light, 0.85);
+    g.beginPath();
+    g.moveTo(cx - ax, cy - ay);
+    g.lineTo(cx + ax, cy + ay);
+    g.stroke();
+    g.lineWidth = Math.max(0.6, w * 0.08);
+    g.strokeStyle = rgba(pal.dark, 0.55);
+    g.beginPath();
+    g.moveTo(cx - ax + ux * step * 0.45, cy - ay + uy * step * 0.45);
+    g.lineTo(cx + ax + ux * step * 0.45, cy + ay + uy * step * 0.45);
+    g.stroke();
   }
 }
 
@@ -38,7 +87,7 @@ function renderHint(color, size) {
   return c;
 }
 
-/** İşlenmiş hücre: renkli zemin üstünde kalın çarpı işi ilmek */
+/** İşlenmiş hücre: renk almış kumaş üzerinde bükümlü iplikten çarpı işi */
 function renderStitch(color, size) {
   const pal = PALETTE[color];
   const s = Math.max(4, Math.ceil(size));
@@ -46,36 +95,19 @@ function renderStitch(color, size) {
   c.width = s;
   c.height = s;
   const g = c.getContext('2d');
-  g.fillStyle = pal.base;
+  fabric(g, s);
+  g.fillStyle = rgba(pal.base, 0.55);
   g.fillRect(0, 0, s, s);
-  g.fillStyle = rgba(pal.dark, 0.25);
-  g.fillRect(0, 0, s, s);
-  g.lineCap = 'round';
-  const a = s * 0.18;
-  const b = s * 0.82;
-  const cross = (w, style) => {
-    g.lineWidth = w;
-    g.strokeStyle = style;
-    g.beginPath();
-    g.moveTo(a, a);
-    g.lineTo(b, b);
-    g.moveTo(b, a);
-    g.lineTo(a, b);
-    g.stroke();
-  };
-  cross(s * 0.36, pal.dark);
-  cross(s * 0.26, pal.base);
-  // ipliğin parlak sırtı
-  g.lineWidth = s * 0.07;
-  g.strokeStyle = rgba(pal.light, 0.9);
-  g.beginPath();
-  g.moveTo(a + s * 0.04, a - s * 0.02);
-  g.lineTo(b - s * 0.1, b - s * 0.16);
-  g.stroke();
+  const a = s * 0.16;
+  const b = s * 0.84;
+  const w = s * 0.34;
+  // Alt tel (\) önce, üst tel (/) üstte: gerçek çarpı işindeki gibi
+  strand(g, a, a, b, b, w, pal);
+  strand(g, b, a, a, b, w, pal);
   return c;
 }
 
-/** İp makarası: ahşap başlıklar arasında sarılı renkli ip */
+/** İp makarası: ahşap başlıklar arasında sıra sıra sarılı ip ve sarkan ip ucu */
 function renderSpool(color, size) {
   const pal = PALETTE[color];
   const s = Math.max(8, Math.ceil(size));
@@ -84,34 +116,40 @@ function renderSpool(color, size) {
   c.height = s;
   const g = c.getContext('2d');
   const wood = PALETTE.n;
-  const cx = s / 2;
-  const top = s * 0.12;
-  const bottom = s * 0.8;
+  const cx = s * 0.47;
+  const top = s * 0.14;
+  const bottom = s * 0.78;
   const bodyW = s * 0.5;
 
-  // gölge
   g.fillStyle = 'rgba(20, 8, 40, 0.28)';
   g.beginPath();
-  g.ellipse(cx, bottom + s * 0.06, s * 0.36, s * 0.06, 0, 0, Math.PI * 2);
+  g.ellipse(cx, bottom + s * 0.07, s * 0.36, s * 0.06, 0, 0, TAU);
   g.fill();
 
-  // sarılı ip gövdesi
-  const body = g.createLinearGradient(cx - bodyW / 2, 0, cx + bodyW / 2, 0);
-  body.addColorStop(0, pal.dark);
-  body.addColorStop(0.35, pal.light);
-  body.addColorStop(0.6, pal.base);
-  body.addColorStop(1, pal.dark);
-  g.fillStyle = body;
-  g.fillRect(cx - bodyW / 2, top, bodyW, bottom - top);
-  // ip sarımları
-  g.strokeStyle = rgba(pal.dark, 0.45);
-  g.lineWidth = Math.max(1, s * 0.022);
-  for (let y = top + s * 0.05; y < bottom; y += s * 0.065) {
-    g.beginPath();
-    g.moveTo(cx - bodyW / 2, y);
-    g.quadraticCurveTo(cx, y + s * 0.03, cx + bodyW / 2, y - s * 0.01);
-    g.stroke();
+  // sarılı ip: her sıra ayrı bir ip tur
+  const rows = 8;
+  const rowH = (bottom - top) / rows;
+  for (let i = 0; i < rows; i++) {
+    const y = top + rowH * (i + 0.5);
+    strand(g, cx - bodyW / 2, y, cx + bodyW / 2, y + rowH * 0.25, rowH * 1.35, pal, { shadow: false, twistPhase: i * 3 });
   }
+  // gövdeye gölge/ışık: silindir hissi
+  const shade = g.createLinearGradient(cx - bodyW / 2, 0, cx + bodyW / 2, 0);
+  shade.addColorStop(0, 'rgba(0,0,0,0.3)');
+  shade.addColorStop(0.35, 'rgba(255,255,255,0.18)');
+  shade.addColorStop(0.7, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.35)');
+  g.fillStyle = shade;
+  g.fillRect(cx - bodyW / 2 - rowH * 0.6, top, bodyW + rowH * 1.2, bottom - top);
+
+  // sarkan ip ucu
+  g.lineCap = 'round';
+  g.lineWidth = Math.max(1.5, s * 0.045);
+  g.strokeStyle = pal.base;
+  g.beginPath();
+  g.moveTo(cx + bodyW / 2, top + rowH * 2);
+  g.bezierCurveTo(cx + bodyW * 0.8, top + rowH * 3, cx + bodyW * 0.6, top + rowH * 5, cx + bodyW * 0.95, top + rowH * 6.5);
+  g.stroke();
 
   // ahşap başlıklar
   const flange = (y) => {
@@ -120,7 +158,7 @@ function renderSpool(color, size) {
     grad.addColorStop(1, wood.base);
     g.fillStyle = grad;
     g.beginPath();
-    g.ellipse(cx, y, s * 0.36, s * 0.075, 0, 0, Math.PI * 2);
+    g.ellipse(cx, y, s * 0.36, s * 0.078, 0, 0, TAU);
     g.fill();
     g.strokeStyle = wood.dark;
     g.lineWidth = Math.max(1, s * 0.03);
@@ -128,18 +166,42 @@ function renderSpool(color, size) {
   };
   flange(top);
   flange(bottom);
-  // ahşap delik
   g.fillStyle = wood.dark;
   g.beginPath();
-  g.ellipse(cx, top, s * 0.06, s * 0.022, 0, 0, Math.PI * 2);
+  g.ellipse(cx, top, s * 0.06, s * 0.022, 0, 0, TAU);
   g.fill();
   return c;
+}
+
+/** Gümüş iğne: (x, y) ucunda, (ux, uy) yönünde */
+function drawNeedle(ctx, x, y, ux, uy, len) {
+  const bx = x - ux * len;
+  const by = y - uy * len;
+  const grad = ctx.createLinearGradient(bx, by, x, y);
+  grad.addColorStop(0, '#9AA3B5');
+  grad.addColorStop(0.5, '#FFFFFF');
+  grad.addColorStop(1, '#B8C0D0');
+  ctx.lineCap = 'round';
+  ctx.lineWidth = Math.max(1.5, len * 0.12);
+  ctx.strokeStyle = '#6B7385';
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  ctx.lineWidth = Math.max(1, len * 0.07);
+  ctx.strokeStyle = grad;
+  ctx.stroke();
+  // iğne deliği
+  ctx.fillStyle = '#4A3A78';
+  ctx.beginPath();
+  ctx.ellipse(bx + ux * len * 0.15, by + uy * len * 0.15, len * 0.03, len * 0.07, Math.atan2(uy, ux) + Math.PI / 2, 0, TAU);
+  ctx.fill();
 }
 
 export class NakisRenderer extends ShooterRenderer {
   constructor(canvas, engine) {
     super(canvas, engine);
-    this.threads = [];        // ilerleyen ipler: { points, color, t0, dur }
+    this.threads = [];         // ilerleyen ipler: { points, color, t0, dur }
     this.arriving = new Map(); // hücre anahtarı → ipin varacağı an (o ana kadar soluk görünür)
   }
 
@@ -160,16 +222,18 @@ export class NakisRenderer extends ShooterRenderer {
     const rest = [];
     for (const ev of events) {
       if (ev.type === 'hit') {
-        // İp makaradan çıkar, girişten labirent gibi hedef hücreye ilerler
-        const start = this.trackPoint(ev.shooter.traveled);
+        // İp makaradan (ya da Sihirli İğne'de şerit girişinden) çıkar, labirent gibi hedefe ilerler
+        const start = ev.shooter ? this.trackPoint(ev.shooter.traveled) : this.trackPoint(ev.lane + 0.5);
         const points = [start, ...ev.path.map((c) => this.cubeCenter(c.x, c.y))];
-        const dur = 120 + ev.path.length * THREAD_MS_PER_CELL;
+        const dur = 140 + ev.path.length * THREAD_MS_PER_CELL;
         this.threads.push({ points, color: ev.color, t0: this.time, dur });
         this.arriving.set(ev.cube.y * this.engine.state.W + ev.cube.x, this.time + dur);
       } else if (ev.type === 'retire') {
         const sp = ev.shooter;
-        const p = sp.traveled !== undefined ? this.trackPoint(sp.traveled) : null;
-        if (p) this._burst(p.x, p.y, sp.color, 8);
+        let p = null;
+        if (sp.traveled !== undefined) p = this.trackPoint(sp.traveled);
+        else if (ev.from) p = this.sourcePoint(ev.from);
+        if (p) this._burst(p.x, p.y, sp.color, 10);
       } else {
         rest.push(ev);
       }
@@ -179,16 +243,15 @@ export class NakisRenderer extends ShooterRenderer {
 
   update(dt) {
     super.update(dt);
+    const W = this.engine.state.W;
     for (const [k, at] of this.arriving) {
       if (this.time >= at) {
         this.arriving.delete(k);
-        const W = this.engine.state.W;
         const c = this.cubeCenter(k % W, Math.floor(k / W));
-        const color = this.engine.state.grid[Math.floor(k / W)][k % W];
-        this._burst(c.x, c.y, color, 3);
+        this._burst(c.x, c.y, this.engine.state.grid[Math.floor(k / W)][k % W], 3);
       }
     }
-    this.threads = this.threads.filter((t) => this.time - t.t0 < t.dur + 260);
+    this.threads = this.threads.filter((t) => this.time - t.t0 < t.dur + 300);
   }
 
   _drawBoard() {
@@ -219,40 +282,50 @@ export class NakisRenderer extends ShooterRenderer {
     }
   }
 
+  // İlerleyen ipler: bükümlü iplik, büküm deseni akar, ucunda iğne
   _drawHits() {
     const { ctx } = this;
     const { cube } = this.L;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    const w = Math.max(3, cube * 0.34);
     for (const t of this.threads) {
       const elapsed = this.time - t.t0;
       const k = Math.min(1, elapsed / t.dur);
-      const fade = elapsed > t.dur ? 1 - (elapsed - t.dur) / 260 : 1;
-      // ipin ucu yol boyunca ilerler
+      const fade = elapsed > t.dur ? Math.max(0, 1 - (elapsed - t.dur) / 300) : 1;
+      const pal = PALETTE[t.color];
       const segs = t.points.length - 1;
       const pos = k * segs;
       const full = Math.floor(pos);
-      const pal = PALETTE[t.color];
-      const trace = () => {
+
+      // İpin görünen kısmı: tam segmentler + yarım segment
+      const pts = t.points.slice(0, full + 1);
+      if (full < segs) {
+        const a = t.points[full];
+        const b = t.points[full + 1];
+        const f = pos - full;
+        pts.push({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f });
+      }
+      ctx.globalAlpha = fade;
+      let phase = -elapsed * 0.05; // büküm deseni ip boyunca akar
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1];
+        const b = pts[i];
+        strand(ctx, a.x, a.y, b.x, b.y, w, pal, { shadow: true, twistPhase: phase });
+        phase += Math.hypot(b.x - a.x, b.y - a.y);
+      }
+      // köşelerde ipi yuvarlat
+      ctx.fillStyle = pal.base;
+      for (let i = 1; i < pts.length - 1; i++) {
         ctx.beginPath();
-        ctx.moveTo(t.points[0].x, t.points[0].y);
-        for (let i = 1; i <= full && i <= segs; i++) ctx.lineTo(t.points[i].x, t.points[i].y);
-        if (full < segs) {
-          const a = t.points[full];
-          const b = t.points[full + 1];
-          const f = pos - full;
-          ctx.lineTo(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
-        }
-      };
-      ctx.globalAlpha = Math.max(0, fade);
-      trace();
-      ctx.lineWidth = Math.max(2.5, cube * 0.3);
-      ctx.strokeStyle = pal.dark;
-      ctx.stroke();
-      trace();
-      ctx.lineWidth = Math.max(1.5, cube * 0.18);
-      ctx.strokeStyle = pal.base;
-      ctx.stroke();
+        ctx.arc(pts[i].x, pts[i].y, w * 0.37, 0, TAU);
+        ctx.fill();
+      }
+      // uçta iğne
+      if (k < 1 && pts.length >= 2) {
+        const a = pts[pts.length - 2];
+        const b = pts[pts.length - 1];
+        const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        drawNeedle(ctx, b.x, b.y, (b.x - a.x) / len, (b.y - a.y) / len, cube * 1.1);
+      }
       ctx.globalAlpha = 1;
     }
   }

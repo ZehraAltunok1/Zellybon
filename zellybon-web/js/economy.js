@@ -33,15 +33,21 @@ export const REWARD_LABELS = {
   colorBomb: { icon: '🌈', name: 'Renk Bombası' },
   shuffle: { icon: '🔀', name: 'Karıştır' },
   hourglass: { icon: '⏳', name: 'Kum Saati' },
+  scissors: { icon: '✂️', name: 'Makas' },
+  needle: { icon: '🪡', name: 'Sihirli İğne' },
+  box: { icon: '📦', name: 'Ekstra Kutu (Nakış)' },
+  magnet: { icon: '🧲', name: 'Mıknatıs' },
 };
 
 export const SHOP_GROUPS = [
   { title: 'Canlar', ids: ['life1', 'lifeFull'] },
   { title: 'Jöle Atış güçlendiricileri', ids: ['extraSlot', 'superStart'] },
+  { title: 'Nakış jokerleri', ids: ['scissors', 'needle', 'box', 'magnet'] },
   { title: 'Jöle Patlat jokerleri', ids: ['hammer', 'shuffle', 'hourglass', 'colorBomb'] },
 ];
 
 export const SHOP_ICONS = {
   life1: '❤️', lifeFull: '💖', extraSlot: '📦', superStart: '⭐',
   hammer: '🔨', shuffle: '🔀', hourglass: '⏳', colorBomb: '🌈',
+  scissors: '✂️', needle: '🪡', box: '📦', magnet: '🧲',
 };
