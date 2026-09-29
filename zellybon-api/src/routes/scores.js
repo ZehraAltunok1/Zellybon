@@ -30,7 +30,7 @@ router.post('/scores', requireAuth, async (req, res, next) => {
     const updated = await User.findOneAndUpdate(
       { _id: req.userId, bestScore: { $lt: score } },
       { $set: { bestScore: score } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     const isNewBest = Boolean(updated);
     const user = updated ?? (await User.findById(req.userId));

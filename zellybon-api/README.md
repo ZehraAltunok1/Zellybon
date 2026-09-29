@@ -9,11 +9,16 @@ Zellybon oyununun Node.js + Express + MongoDB API'si.
    ```bash
    npm install
    ```
-3. `.env.example` dosyasını `.env` olarak kopyala ve değerleri doldur:
-   - `MONGODB_URI` — Atlas bağlantı adresi (sonuna veritabanı adı: `/zellybon`)
-   - `JWT_SECRET` — uzun, rastgele bir metin
-   - `PORT` — varsayılan `3000`
-   - `CORS_ORIGIN` — oyunun açıldığı adres (ör. `http://localhost:5500`), virgülle birden fazla yazılabilir
+3. Bu klasörde bir `.env` dosyası oluştur (GitHub'a gönderilmez):
+   ```
+   MONGODB_URI=mongodb+srv://KULLANICI:SIFRE@cluster0.xxxxx.mongodb.net/zellybon?retryWrites=true&w=majority
+   JWT_SECRET=uzun-rastgele-bir-metin
+   PORT=3000
+   CORS_ORIGIN=http://localhost:5500,http://127.0.0.1:5500
+   ```
+   - `MONGODB_URI` — Atlas > Connect > Drivers adresi; `/zellybon` veritabanı adıdır
+   - `JWT_SECRET` — üretmek için: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+   - `CORS_ORIGIN` — oyunun açıldığı adres(ler), virgülle ayrılır. VS Code Live Server `127.0.0.1` kullanır.
 
 ## Çalıştırma
 

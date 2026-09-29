@@ -11,6 +11,14 @@ export function createApp({ corsOrigin = '' } = {}) {
   app.use(cors({ origin: origins.length ? origins : false }));
   app.use(express.json({ limit: '10kb' }));
 
+  app.get(['/', '/api'], (req, res) =>
+    res.json({
+      name: 'Zellybon API',
+      message: 'Bu adres oyunun API sunucusu. Oyunu açmak için zellybon-web adresini kullan.',
+      health: '/api/health',
+    }),
+  );
+
   app.get('/api/health', (req, res) => res.json({ ok: true }));
 
   app.use('/api/auth', authRoutes);
@@ -26,7 +34,9 @@ export function createApp({ corsOrigin = '' } = {}) {
     }
   });
 
-  app.use((req, res) => res.status(404).json({ error: 'Adres bulunamadı.' }));
+  app.use((req, res) =>
+    res.status(404).json({ error: `Adres bulunamadı: ${req.method} ${req.path}` }),
+  );
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
