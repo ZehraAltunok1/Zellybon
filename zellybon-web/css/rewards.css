@@ -1,0 +1,206 @@
+/* Kısayollar, sandıklar, açılış penceresi, günlük ödüller ve görevler */
+
+.shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+.shortcut {
+  position: relative;
+  font: inherit;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 64px;
+  padding: 6px 4px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 18px;
+  background: rgba(22, 44, 66, 0.3);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(22, 44, 66, 0.35);
+  transition: transform 0.1s;
+}
+
+.shortcut:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(22, 44, 66, 0.35); }
+.shortcut-static { cursor: default; }
+.shortcut-icon { font-size: 1.5rem; line-height: 1; }
+
+.badge {
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #EA5249;
+  border: 2px solid #FFFFFF;
+  font-size: 0.78rem;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+.badge[hidden] { display: none; }
+.badge.ready { background: #58C95B; animation: pulse 1.2s ease-in-out infinite; }
+
+/* ---------- Sandıklarım ---------- */
+
+.chests-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+.chest-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 8px 12px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 2px solid var(--card-border);
+  text-align: center;
+}
+
+.chest-card small { opacity: 0.85; min-height: 1.2em; }
+.chest-card.tier-bronze { border-color: #E0955A; }
+.chest-card.tier-silver { border-color: #E3E9F0; }
+.chest-card.tier-gold { border-color: #FFE07A; box-shadow: 0 0 16px rgba(255, 224, 122, 0.35); }
+.chest-card.tier-diamond { border-color: #9BEFF5; box-shadow: 0 0 16px rgba(155, 239, 245, 0.4); }
+.chest-card.tier-legend { border-color: #EFCD43; box-shadow: 0 0 22px rgba(214, 79, 185, 0.5); }
+.btn-open { margin-top: 6px; width: 100%; min-height: 44px; font-size: 1rem; }
+
+.chests-legend { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding-bottom: 24px; }
+.legend-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.legend-item small { font-size: 0.7rem; font-weight: 700; line-height: 1.1; }
+
+.chest-won {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 18px 14px;
+  border-radius: 20px;
+  background: rgba(239, 205, 67, 0.2);
+  border: 2px solid rgba(239, 205, 67, 0.8);
+}
+
+.chest-won[hidden] { display: none; }
+.chest-won small { opacity: 0.9; }
+.btn-small-wide { min-height: 40px; font-size: 0.95rem; margin-top: 6px; padding: 6px 16px; }
+
+/* ---------- Açılış penceresi ---------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 30, 48, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal[hidden] { display: none; }
+
+.modal-card {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  border-radius: 26px;
+  background: linear-gradient(170deg, #4A84B0, #24507A);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  text-align: center;
+}
+
+.modal-card .rewards { width: 100%; }
+
+/* ---------- Günlük ödüller ---------- */
+
+.calendar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+.day-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 92px;
+  padding: 8px 4px;
+  border-radius: 16px;
+  background: rgba(22, 44, 66, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  text-align: center;
+}
+
+.day-card.big { grid-column: span 2; background: rgba(239, 205, 67, 0.18); }
+.day-card.today { border-color: #EFCD43; box-shadow: 0 0 16px rgba(239, 205, 67, 0.5); }
+.day-card.done { opacity: 0.6; }
+.day-label { font-size: 0.8rem; font-weight: 800; opacity: 0.9; }
+.day-rewards { font-size: 0.85rem; font-weight: 700; line-height: 1.25; }
+
+.day-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #58C95B;
+  border: 2px solid #FFFFFF;
+  font-weight: 800;
+}
+
+.btn-claim { min-height: 36px; padding: 4px 14px; font-size: 0.95rem; border-radius: 12px; }
+
+.quests { display: flex; flex-direction: column; gap: 8px; }
+
+.quest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+
+.quest.claimed { opacity: 0.6; }
+.quest-text { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.quest-bar {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(22, 44, 66, 0.4);
+  overflow: hidden;
+}
+
+.quest-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: linear-gradient(90deg, #58C95B, #32D4E0);
+  border-radius: inherit;
+}
+
+.quest-count { position: absolute; inset: 0; display: grid; place-items: center; font-size: 0.72rem; font-weight: 800; }
+.quest-action { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.quest-reward { font-weight: 800; white-space: nowrap; }
+.quest-done { color: #58C95B; font-weight: 800; font-size: 1.2rem; }
+
+.quest-bonus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+}

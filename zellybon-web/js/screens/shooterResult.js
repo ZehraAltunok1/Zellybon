@@ -6,6 +6,7 @@ import { getUser, setUser, renderRewards } from '../session.js';
 import { CUBE_COLORS, MAIN_LEVELS } from '../shooter/levels.js';
 import { NAKIS_LEVELS } from '../nakis/levels.js';
 import { CHEST_NAMES } from '../economy.js';
+import { paintChestCanvas } from '../chest.js';
 import { launchConfetti } from './confetti.js';
 
 const MODES = {
@@ -49,10 +50,9 @@ function showChest(chest) {
   const box = document.getElementById('sr-chest');
   box.hidden = !chest;
   if (!chest) return;
-  const info = CHEST_NAMES[chest.tier] ?? { name: chest.name, icon: '🎁' };
-  box.className = `chest chest-${chest.tier}`;
-  document.getElementById('sr-chest-icon').textContent = info.icon;
-  document.getElementById('sr-chest-name').textContent = `${info.name} açıldı!`;
+  const info = CHEST_NAMES[chest.tier] ?? { name: 'Sandık' };
+  paintChestCanvas(document.getElementById('sr-chest-canvas'), chest.tier, 110, { time: 400 });
+  document.getElementById('sr-chest-name').textContent = `${info.name} kazandın!`;
 }
 
 export async function showShooterResult(result, mode = 'main') {

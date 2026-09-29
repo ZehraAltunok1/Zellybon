@@ -1,6 +1,8 @@
 // Ekonominin istemci tarafı: güçlendirici tanımları, sandık adları ve ödül etiketleri.
 // Kurallar sunucudadır (zellybon-api/src/rewards.js); burada sadece gösterim bilgisi var.
 
+import { CHEST_INFO } from './chest.js';
+
 export const BOOSTERS = [
   {
     id: 'extraSlot',
@@ -16,16 +18,14 @@ export const BOOSTERS = [
   },
 ];
 
-export const CHEST_NAMES = {
-  bronze: { name: 'Bronz Sandık', icon: '🎁' },
-  silver: { name: 'Gümüş Sandık', icon: '🎁' },
-  gold: { name: 'Altın Sandık', icon: '🎁' },
-  diamond: { name: 'Elmas Sandık', icon: '💎' },
-  legend: { name: 'Efsane Sandık', icon: '👑' },
-};
+export const CHEST_NAMES = Object.fromEntries(
+  Object.entries(CHEST_INFO).map(([id, c]) => [id, { name: c.name, icon: '🎁', keys: c.keys }]),
+);
 
 export const REWARD_LABELS = {
   coins: { icon: '🪙', name: 'Para' },
+  key: { icon: '🔑', name: 'Anahtar' },
+  chest: { icon: '🎁', name: 'Sandık' },
   life: { icon: '❤️', name: 'Can' },
   extraSlot: { icon: '📦', name: 'Ekstra Kutu' },
   superStart: { icon: '⭐', name: 'Süper Başlangıç' },

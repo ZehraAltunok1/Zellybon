@@ -6,6 +6,7 @@ import requireAuth from '../middleware/requireAuth.js';
 import Score from '../models/Score.js';
 import User from '../models/User.js';
 import { quickRoundRewards, applyRewards, syncLives } from '../rewards.js';
+import { bumpQuest } from '../daily.js';
 
 const router = Router();
 
@@ -41,6 +42,8 @@ router.post('/scores', requireAuth, async (req, res, next) => {
     const rewards = quickRoundRewards({ score, isNewBest, maxCombo });
     syncLives(user);
     applyRewards(user, rewards);
+    bumpQuest(user, 'play');
+    if (score >= 1500) bumpQuest(user, 'quick_score');
     await user.save();
 
     res.status(201).json({ saved: true, isNewBest, bestScore: user.bestScore, rewards, user: user.toPublic() });

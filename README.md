@@ -10,7 +10,8 @@ Tek kişilik, renkli jöle oyunları. Rakibin başka oyuncular değil, kendi rek
 - **Karakterli jöleler:** Zıplayan (şeritte 2 küp), Roket (2 kat hızlı), Delici (art arda aynı renk küplerin hepsi), Bomba (çevredeki küpler). Bölümler ilerledikçe tanıtılır.
 - **Canlar:** en fazla 5, 5 dakikada 1 dolar. Her deneme 1 can harcar, kazanırsan geri gelir.
 - **Para (🪙):** her yeni bölüm, bölüm numarası arttıkça daha çok para verir.
-- **Sandıklar:** 2, 4, 7, 11, 16. bölümlerde. Seyrekleşir ama değerlenir: Bronz → Gümüş → Altın → Elmas → Efsane.
+- **Sandıklar:** Jöle Atış ve Nakış'ta 2, 4, 7, 11, 16, 22. bölümlerde kazanılır; seyrekleşir ama değerlenir: Bronz → Gümüş → Altın → Elmas → Efsane (renklerinden ayırt edilir). Sandıklar **anahtarla** açılır (1–5 🔑).
+- **Günlük ödüller:** 7 günlük giriş takvimi (arka arkaya girdikçe büyür, 7. gün Gümüş Sandık) ve her gün 3 görev. İkisi de anahtar kazandırır.
 - **Dükkân:** paralarla can, güçlendirici (📦 Ekstra Kutu, ⭐ Süper Başlangıç) ve joker alınır.
 
 **Nakış:** Renksiz bir tabloyu (Yıldızlı Gece, Büyük Dalga, Ayçiçekleri …) renkli iplerle işle. Her hücrede olması gereken rengin soluk izi görünür. İp makaraları kaykay yolunda döner. İp, boyanmamış hücrelerin arasından labirent gibi yolunu bulur ve kendi rengindeki **en içteki** hücreyi çarpı işiyle işler. İşlenen hücreler yolu kapatır, bu yüzden yanlış renk "yapamaz" ve kutuya iner.

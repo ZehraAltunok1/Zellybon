@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/screens.css">
   <link rel="stylesheet" href="css/economy.css">
+  <link rel="stylesheet" href="css/rewards.css">
   <script>
     // Farklı bir API adresi kullanmak için:
     // window.ZELLYBON_API_URL = 'https://zellybon-api.onrender.com/api';
@@ -60,6 +61,22 @@
         <div class="hearts" aria-label="Canlar"></div>
         <span class="lives-timer"></span>
       </div>
+      <nav class="shortcuts" aria-label="Kısayollar">
+        <button class="shortcut" data-action="daily">
+          <span class="shortcut-icon">📅</span><span>Günlük</span>
+          <span id="badge-daily" class="badge" hidden></span>
+        </button>
+        <button class="shortcut" data-action="chests">
+          <canvas id="shortcut-chest" aria-hidden="true"></canvas><span>Sandıklar</span>
+          <span id="badge-chests" class="badge" hidden></span>
+        </button>
+        <button class="shortcut" data-action="shop">
+          <span class="shortcut-icon">🛒</span><span>Dükkân</span>
+        </button>
+        <div class="shortcut shortcut-static" aria-label="Anahtarlar">
+          <span class="shortcut-icon">🔑</span><span><b data-keys>0</b> anahtar</span>
+        </div>
+      </nav>
 
       <article class="game-card game-card-main">
         <span class="game-card-tag">Ana oyun</span>
@@ -77,8 +94,6 @@
         <p class="game-card-level" id="home-nakis-level"></p>
         <button class="btn btn-primary" data-action="nakis-map">Nakış İşle</button>
       </article>
-
-      <button class="btn btn-ghost shop-btn" data-action="shop">🛒 Dükkân</button>
 
       <article class="game-card game-card-side">
         <span class="game-card-tag">Can &amp; joker kazan</span>
@@ -126,6 +141,49 @@
       <div id="nakis-grid" class="nakis-grid"></div>
     </section>
 
+    <!-- Sandıklarım -->
+    <section class="screen" data-screen="chests" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="home" aria-label="Ana menüye dön">‹</button>
+        <h2 class="title">Sandıklarım</h2>
+        <span class="coin-pill coin-pill-static">🔑 <b id="chests-keys">0</b></span>
+      </header>
+      <p class="muted small">Sandıkları bölüm geçerek kazanırsın, anahtarla açarsın. Anahtarlar 📅 günlük girişten ve günlük görevlerden gelir.</p>
+      <p id="chests-empty" class="card muted" hidden>Henüz sandığın yok. Jöle Atış ve Nakış'ta ilerledikçe sandık kazanırsın!</p>
+      <div id="chests-grid" class="chests-grid"></div>
+      <button class="btn btn-secondary" data-action="daily">📅 Anahtar kazan</button>
+      <h3 class="subtitle">Sandık türleri</h3>
+      <div id="chests-legend" class="chests-legend"></div>
+    </section>
+
+    <!-- Günlük ödüller -->
+    <section class="screen" data-screen="daily" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="home" aria-label="Ana menüye dön">‹</button>
+        <h2 class="title">Günlük Ödüller</h2>
+      </header>
+      <h3 class="subtitle">Giriş takvimi</h3>
+      <p class="muted small">Her gün gir, ödüller büyüsün! Bir gün kaçırırsan takvim baştan başlar.</p>
+      <div id="daily-calendar" class="calendar"></div>
+      <h3 class="subtitle">Günün görevleri</h3>
+      <p id="daily-reset" class="muted small"></p>
+      <div id="daily-quests" class="quests"></div>
+      <div id="daily-bonus" class="card quest-bonus"></div>
+      <p id="daily-status" class="muted small" role="status"></p>
+      <ul id="daily-got" class="rewards" hidden></ul>
+      <button class="btn btn-secondary" data-action="chests">🎁 Sandıklarım</button>
+    </section>
+
+    <!-- Sandık açılış penceresi -->
+    <div id="chest-modal" class="modal" hidden>
+      <div class="modal-card">
+        <h2 id="chest-modal-title" class="title"></h2>
+        <canvas id="chest-modal-canvas" aria-hidden="true"></canvas>
+        <ul id="chest-modal-rewards" class="rewards" hidden></ul>
+        <button id="chest-modal-close" class="btn btn-primary" hidden>Harika!</button>
+      </div>
+    </div>
+
     <!-- Dükkân -->
     <section class="screen" data-screen="shop" hidden>
       <header class="page-head">
@@ -167,9 +225,11 @@
       <h2 id="sr-title" class="title"></h2>
       <canvas id="sr-picture" class="picture" width="160" height="160"></canvas>
       <p id="sr-text" class="muted"></p>
-      <div id="sr-chest" class="chest" hidden>
-        <span id="sr-chest-icon" class="chest-icon"></span>
+      <div id="sr-chest" class="chest-won" hidden>
+        <canvas id="sr-chest-canvas" aria-hidden="true"></canvas>
         <strong id="sr-chest-name"></strong>
+        <small>Sandıklarım'a eklendi — anahtarla açabilirsin</small>
+        <button class="btn btn-secondary btn-small-wide" data-action="chests">🎁 Sandıklarım</button>
       </div>
       <ul id="sr-rewards" class="rewards" hidden></ul>
       <div id="sr-lives" class="lives-card card" data-lives>

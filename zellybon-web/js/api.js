@@ -97,6 +97,13 @@ export const Api = {
   nakisResult: (levelId, won) => request('/nakis/result', { method: 'POST', body: { levelId, won } }),
   nakisJoker: (type) => request('/nakis/jokers/use', { method: 'POST', body: { type } }),
 
+  // Günlük ödüller ve sandıklar
+  daily: () => request('/daily'),
+  claimLogin: () => request('/daily/login', { method: 'POST' }),
+  claimQuest: (id) => request(`/daily/quests/${encodeURIComponent(id)}/claim`, { method: 'POST' }),
+  claimQuestBonus: () => request('/daily/quests/bonus', { method: 'POST' }),
+  openChest: (id) => request(`/chests/${encodeURIComponent(id)}/open`, { method: 'POST' }),
+
   // Dükkân
   shop: () => request('/shop', { auth: false }),
   buy: (itemId) => request('/shop/buy', { method: 'POST', body: { itemId } }),

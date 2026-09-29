@@ -25,13 +25,24 @@ export const nakisLevelCoins = (levelId) => 8 + levelId * 4;
 // ---------- Sandıklar ----------
 // Sandıklar gittikçe seyrekleşir (aralar 2, 2, 3, 4, 5, 6 … bölüm) ama değerlenir.
 
+// keys: sandığı açmak için gereken anahtar sayısı
 export const CHEST_TIERS = [
-  { id: 'bronze', name: 'Bronz Sandık', coins: 40, jokers: 1, boosters: 0, lives: 0 },
-  { id: 'silver', name: 'Gümüş Sandık', coins: 80, jokers: 2, boosters: 1, lives: 0 },
-  { id: 'gold', name: 'Altın Sandık', coins: 150, jokers: 3, boosters: 1, lives: LIVES_MAX },
-  { id: 'diamond', name: 'Elmas Sandık', coins: 280, jokers: 4, boosters: 2, lives: LIVES_MAX },
-  { id: 'legend', name: 'Efsane Sandık', coins: 500, jokers: 6, boosters: 3, lives: LIVES_MAX },
+  { id: 'bronze', name: 'Bronz Sandık', keys: 1, coins: 40, jokers: 1, boosters: 0, lives: 0 },
+  { id: 'silver', name: 'Gümüş Sandık', keys: 2, coins: 80, jokers: 2, boosters: 1, lives: 0 },
+  { id: 'gold', name: 'Altın Sandık', keys: 3, coins: 150, jokers: 3, boosters: 1, lives: LIVES_MAX },
+  { id: 'diamond', name: 'Elmas Sandık', keys: 4, coins: 280, jokers: 4, boosters: 2, lives: LIVES_MAX },
+  { id: 'legend', name: 'Efsane Sandık', keys: 5, coins: 500, jokers: 6, boosters: 3, lives: LIVES_MAX },
 ];
+
+export const chestTierById = (id) => CHEST_TIERS.find((t) => t.id === id) ?? null;
+
+/** Bölüm bir sandık veriyorsa ödül olarak ekler (sandık açılmaz, envantere girer). */
+export function levelChestReward(levelId, gameName) {
+  const index = chestIndexFor(levelId);
+  if (index < 0) return null;
+  const tier = chestTier(index);
+  return { type: 'chest', tier: tier.id, count: 1, reason: `${gameName} ${levelId}. bölüm` };
+}
 
 /** Sandık veren bölümler: 2, 4, 7, 11, 16, 22, … */
 export function chestLevels(upTo = 100) {
@@ -65,8 +76,9 @@ export function openChest(index, random = Math.random) {
   const items = [{ type: 'coins', count: tier.coins, reason: tier.name }];
   if (tier.lives) items.push({ type: 'life', count: tier.lives, reason: tier.name });
   const jokerCounts = {};
+  const pool = [...JOKER_TYPES, ...NAKIS_JOKER_TYPES];
   for (let k = 0; k < tier.jokers; k++) {
-    const t = JOKER_TYPES[Math.floor(random() * JOKER_TYPES.length)];
+    const t = pool[Math.floor(random() * pool.length)];
     jokerCounts[t] = (jokerCounts[t] ?? 0) + 1;
   }
   const boosterCounts = {};
@@ -182,6 +194,10 @@ export function applyRewards(user, rewards, now = Date.now()) {
       if (user.lives >= LIVES_MAX) user.livesAt = new Date(now);
     } else if (r.type === 'coins') {
       user.coins = (user.coins ?? 0) + r.count;
+    } else if (r.type === 'key') {
+      user.keys = (user.keys ?? 0) + r.count;
+    } else if (r.type === 'chest') {
+      for (let k = 0; k < r.count; k++) user.chests.push({ tier: r.tier, source: r.reason ?? '' });
     } else if (JOKER_TYPES.includes(r.type)) {
       user.jokers[r.type] = (user.jokers[r.type] ?? 0) + r.count;
     } else if (BOOSTER_TYPES.includes(r.type)) {

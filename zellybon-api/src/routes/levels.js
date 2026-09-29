@@ -4,6 +4,7 @@ import { Router } from 'express';
 import requireAuth from '../middleware/requireAuth.js';
 import User from '../models/User.js';
 import { MATCH_LEVEL_COUNT, matchLevelRewards, applyRewards, syncLives } from '../rewards.js';
+import { bumpQuest } from '../daily.js';
 
 const router = Router();
 
@@ -38,6 +39,8 @@ router.post('/levels/:id/result', requireAuth, async (req, res, next) => {
     const rewards = matchLevelRewards({ levelId, won, firstWin, firstThreeStars });
     syncLives(user);
     applyRewards(user, rewards);
+    bumpQuest(user, 'play');
+    if (won) bumpQuest(user, 'match_win');
     await user.save();
 
     res.json({

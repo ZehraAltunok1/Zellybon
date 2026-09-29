@@ -1,0 +1,117 @@
+// Sandıklarım: kazanılan sandıklar anahtarla açılır. Her kademe rengiyle ayırt edilir.
+
+import { Api } from '../api.js';
+import { getUser, setUser, renderRewards } from '../session.js';
+import { CHEST_INFO, CHEST_ORDER, paintChestCanvas } from '../chest.js';
+
+let animRaf = 0;
+
+export function renderChests() {
+  const user = getUser();
+  if (!user) return;
+  document.getElementById('chests-keys').textContent = String(user.keys ?? 0);
+
+  const grid = document.getElementById('chests-grid');
+  grid.replaceChildren();
+  const empty = document.getElementById('chests-empty');
+  empty.hidden = user.chests.length > 0;
+
+  // Değerli sandıklar önce
+  const chests = [...user.chests].sort((a, b) => CHEST_ORDER.indexOf(b.tier) - CHEST_ORDER.indexOf(a.tier));
+  for (const chest of chests) {
+    const info = CHEST_INFO[chest.tier];
+    const card = document.createElement('div');
+    card.className = `chest-card tier-${chest.tier}`;
+    const canvas = document.createElement('canvas');
+    paintChestCanvas(canvas, chest.tier, 104);
+    const name = document.createElement('strong');
+    name.textContent = info.name;
+    const source = document.createElement('small');
+    source.textContent = chest.source || '';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-primary btn-open';
+    btn.textContent = `🔑 ${info.keys} ile aç`;
+    btn.disabled = (user.keys ?? 0) < info.keys;
+    btn.addEventListener('click', () => openChestFlow(chest));
+    card.append(canvas, name, source, btn);
+    grid.appendChild(card);
+  }
+
+  // Kademe rehberi: sandıklar renklerinden tanınır
+  const legend = document.getElementById('chests-legend');
+  legend.replaceChildren();
+  for (const tier of CHEST_ORDER) {
+    const info = CHEST_INFO[tier];
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    const canvas = document.createElement('canvas');
+    paintChestCanvas(canvas, tier, 52);
+    const label = document.createElement('small');
+    label.textContent = `${info.name.replace(' Sandık', '')} · 🔑${info.keys}`;
+    item.append(canvas, label);
+    legend.appendChild(item);
+  }
+}
+
+// Açma animasyonu: sallanma → kapak açılır, ışık → ödüller
+async function openChestFlow(chest) {
+  const modal = document.getElementById('chest-modal');
+  const canvas = document.getElementById('chest-modal-canvas');
+  const title = document.getElementById('chest-modal-title');
+  const list = document.getElementById('chest-modal-rewards');
+  const closeBtn = document.getElementById('chest-modal-close');
+  const info = CHEST_INFO[chest.tier];
+
+  title.textContent = `${info.name} açılıyor…`;
+  renderRewards(list, []);
+  closeBtn.hidden = true;
+  modal.hidden = false;
+
+  const start = performance.now();
+  let openAt = null;
+  let result = null;
+  let error = null;
+  Api.openChest(chest.id)
+    .then((res) => { result = res; })
+    .catch((err) => { error = err; });
+
+  cancelAnimationFrame(animRaf);
+  const size = Math.min(260, window.innerWidth - 60);
+  const frame = (now) => {
+    const t = now - start;
+    let open = 0;
+    let shake = 0;
+    if (!openAt && t > 900 && (result || error)) openAt = now;
+    if (!openAt) {
+      shake = Math.sin(t / 45) * Math.min(1, t / 400) * 6;
+    } else {
+      open = Math.min(1, (now - openAt) / 600);
+    }
+    canvas.style.transform = `translateX(${shake}px) rotate(${shake * 0.6}deg)`;
+    paintChestCanvas(canvas, chest.tier, size, { open: error ? 0 : open, time: t });
+    if (openAt && (error || open >= 1)) finish();
+    animRaf = requestAnimationFrame(frame);
+  };
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    closeBtn.hidden = false;
+    if (error) {
+      title.textContent = error.message;
+      return;
+    }
+    setUser(result.user);
+    title.textContent = `${info.name} açıldı! 🎉`;
+    renderRewards(list, result.opened.items);
+  };
+  animRaf = requestAnimationFrame(frame);
+
+  closeBtn.onclick = () => {
+    cancelAnimationFrame(animRaf);
+    modal.hidden = true;
+    canvas.style.transform = '';
+    renderChests();
+  };
+}

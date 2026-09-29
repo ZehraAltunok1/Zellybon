@@ -2,6 +2,7 @@ import { Router } from 'express';
 import requireAuth from '../middleware/requireAuth.js';
 import User from '../models/User.js';
 import { JOKER_TYPES } from '../rewards.js';
+import { bumpQuest } from '../daily.js';
 
 const router = Router();
 
@@ -18,6 +19,8 @@ router.post('/jokers/use', requireAuth, async (req, res, next) => {
       { returnDocument: 'after' },
     );
     if (!user) return res.status(409).json({ error: 'Bu jokerden kalmadı.' });
+    bumpQuest(user, 'use_joker');
+    await user.save();
     res.json({ jokers: user.publicJokers() });
   } catch (err) {
     next(err);

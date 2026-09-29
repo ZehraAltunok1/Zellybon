@@ -1,6 +1,7 @@
 // Giriş yapan kullanıcının durumu (can, joker, ilerleme) ve can sayacı.
 
 import { REWARD_LABELS } from './economy.js';
+import { CHEST_INFO } from './chest.js';
 
 let user = null;
 let syncedAt = 0;
@@ -65,7 +66,9 @@ export function renderRewards(listEl, rewards = []) {
   listEl.replaceChildren();
   listEl.hidden = rewards.length === 0;
   for (const r of rewards) {
-    const label = REWARD_LABELS[r.type] ?? { icon: '🎁', name: r.type };
+    const label = r.type === 'chest'
+      ? { icon: '🎁', name: CHEST_INFO[r.tier]?.name ?? 'Sandık' }
+      : REWARD_LABELS[r.type] ?? { icon: '🎁', name: r.type };
     const li = document.createElement('li');
     li.className = 'reward';
     const icon = document.createElement('span');

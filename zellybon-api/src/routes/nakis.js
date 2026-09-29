@@ -4,7 +4,8 @@
 import { Router } from 'express';
 import requireAuth from '../middleware/requireAuth.js';
 import User from '../models/User.js';
-import { NAKIS_LEVEL_COUNT, NAKIS_JOKER_TYPES, nakisRewards, applyRewards } from '../rewards.js';
+import { NAKIS_LEVEL_COUNT, NAKIS_JOKER_TYPES, nakisRewards, applyRewards, levelChestReward } from '../rewards.js';
+import { bumpQuest } from '../daily.js';
 
 const router = Router();
 
@@ -23,13 +24,21 @@ router.post('/nakis/result', requireAuth, async (req, res, next) => {
 
     const firstWin = won && levelId === current;
     let rewards = [];
+    let chest = null;
     if (firstWin) {
       user.nakisLevel = levelId + 1;
       rewards = nakisRewards(levelId);
+      const chestReward = levelChestReward(levelId, 'Nakış');
+      if (chestReward) {
+        chest = { tier: chestReward.tier };
+        rewards.push(chestReward);
+      }
       applyRewards(user, rewards);
     }
+    bumpQuest(user, 'play');
+    if (won) bumpQuest(user, 'nakis_win');
     await user.save();
-    res.json({ saved: true, firstWin, rewards, user: user.toPublic() });
+    res.json({ saved: true, firstWin, rewards, chest, user: user.toPublic() });
   } catch (err) {
     next(err);
   }
@@ -47,6 +56,8 @@ router.post('/nakis/jokers/use', requireAuth, async (req, res, next) => {
       { returnDocument: 'after' },
     );
     if (!user) return res.status(409).json({ error: 'Bu jokerden kalmadı.' });
+    bumpQuest(user, 'use_joker');
+    await user.save();
     res.json({ user: user.toPublic() });
   } catch (err) {
     next(err);

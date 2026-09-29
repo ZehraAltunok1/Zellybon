@@ -40,6 +40,12 @@ Kontrol: `GET http://localhost:3000/api/health` → `{"ok":true}`
 | POST | `/api/main/start` | Jöle Atış: `{levelId, boosters?}` → 1 can + seçilen güçlendiricileri harcar (yoksa 409) |
 | POST | `/api/main/result` | Jöle Atış: `{levelId, won}` → can iadesi; ilk galibiyette para ve (sandık bölümüyse) sandık |
 | POST | `/api/nakis/result` | Nakış: `{levelId, won}` → ilk galibiyette para + sonraki tablo |
+| POST | `/api/nakis/jokers/use` | `{type}` → Nakış jokeri kullan |
+| GET | `/api/daily` | Giriş takvimi ve günün görevleri |
+| POST | `/api/daily/login` | Günlük giriş ödülünü al |
+| POST | `/api/daily/quests/:id/claim` | Tamamlanan görevin ödülünü al |
+| POST | `/api/daily/quests/bonus` | Üç görev bonusunu al |
+| POST | `/api/chests/:id/open` | Sandığı anahtarla aç |
 | GET | `/api/shop` | Dükkân ürünleri ve fiyatları |
 | POST | `/api/shop/buy` | `{itemId}` → parayla can / güçlendirici / joker al |
 | POST | `/api/scores` | Hızlı Tur: `{score, maxCombo, jelliesPopped, durationMs}` → `{isNewBest, rewards, user}` |

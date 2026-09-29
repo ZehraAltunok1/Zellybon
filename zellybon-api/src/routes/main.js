@@ -5,9 +5,9 @@ import { Router } from 'express';
 import requireAuth from '../middleware/requireAuth.js';
 import User from '../models/User.js';
 import {
-  MAIN_LEVEL_COUNT, LIVES_MAX, BOOSTER_TYPES, syncLives, applyRewards,
-  mainLevelCoins, chestIndexFor, openChest,
+  MAIN_LEVEL_COUNT, LIVES_MAX, BOOSTER_TYPES, syncLives, applyRewards, mainLevelCoins, levelChestReward,
 } from '../rewards.js';
+import { bumpQuest } from '../daily.js';
 
 const router = Router();
 
@@ -73,13 +73,16 @@ router.post('/main/result', requireAuth, async (req, res, next) => {
     if (firstWin) {
       user.mainLevel = levelId + 1;
       rewards.push({ type: 'coins', count: mainLevelCoins(levelId), reason: `Bölüm ${levelId} geçildi` });
-      const chestIndex = chestIndexFor(levelId);
-      if (chestIndex >= 0) {
-        chest = openChest(chestIndex);
-        rewards.push(...chest.items);
+      // Sandık açılmaz, envantere girer; anahtarla Sandıklarım'dan açılır
+      const chestReward = levelChestReward(levelId, 'Jöle Atış');
+      if (chestReward) {
+        chest = { tier: chestReward.tier };
+        rewards.push(chestReward);
       }
       applyRewards(user, rewards);
     }
+    bumpQuest(user, 'play');
+    if (won) bumpQuest(user, 'main_win');
     await user.save();
     res.json({
       saved: true,

@@ -17,6 +17,8 @@ import { NakisRenderer } from './nakis/renderer.js';
 import { getNakisLevel } from './nakis/levels.js';
 import { NAKIS_JOKERS, applyNakisJoker } from './nakis/jokers.js';
 import { renderNakisMap } from './screens/nakisMap.js';
+import { renderChests } from './screens/chests.js';
+import { showDaily } from './screens/daily.js';
 import { renderHome, currentMainLevelId, currentNakisLevelId } from './screens/home.js';
 import { renderHub, renderLevelMap } from './screens/hub.js';
 import { showQuickResult, showLevelResult } from './screens/result.js';
@@ -80,6 +82,7 @@ onUserChange(() => {
   if (current === 'home') renderHome(user);
   if (current === 'hub') renderHub(user);
   if (current === 'shop') renderShop();
+  if (current === 'chests' && document.getElementById('chest-modal').hidden) renderChests();
 });
 
 // ---------- Ekranlar ----------
@@ -340,6 +343,16 @@ document.addEventListener('click', (e) => {
       break;
     case 'nakis-map':
       goNakisMap();
+      break;
+    case 'chests':
+      stopGames();
+      show('chests');
+      renderChests();
+      break;
+    case 'daily':
+      stopGames();
+      show('daily');
+      showDaily();
       break;
     case 'logout':
       stopGames();

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import {
   STARTING_JOKERS, STARTING_BOOSTERS, STARTING_NAKIS_JOKERS, LIVES_MAX, livesInfo, nextChest,
 } from '../rewards.js';
+import { dailySummary } from '../daily.js';
 
 const levelProgressSchema = new mongoose.Schema(
   {
@@ -12,6 +13,12 @@ const levelProgressSchema = new mongoose.Schema(
 );
 
 const counter = (start) => ({ type: Number, default: start, min: 0 });
+
+const chestSchema = new mongoose.Schema({
+  tier: { type: String, required: true },
+  source: { type: String, default: '' },
+  earnedAt: { type: Date, default: Date.now },
+});
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -27,6 +34,15 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   bestScore: { type: Number, default: 0 },
   coins: counter(0),
+
+  // Sandıklar anahtarla açılır; anahtarlar günlük giriş ve günlük görevlerden kazanılır
+  keys: counter(1),
+  chests: {
+    type: [chestSchema],
+    default: () => [{ tier: 'bronze', source: 'Hoş geldin hediyesi' }],
+  },
+  daily: { type: mongoose.Schema.Types.Mixed, default: () => ({ lastClaim: null, day: 0 }) },
+  quests: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
 
   // Ana oyun (Jöle Atış)
   mainLevel: { type: Number, default: 1 }, // açılmış en yüksek bölüm
@@ -86,6 +102,9 @@ userSchema.methods.toPublic = function toPublic() {
     username: this.username,
     bestScore: this.bestScore,
     coins: this.coins ?? 0,
+    keys: this.keys ?? 0,
+    chests: (this.chests ?? []).map((c) => ({ id: c._id, tier: c.tier, source: c.source })),
+    daily: dailySummary(this),
     mainLevel: this.mainLevel,
     nextChest: nextChest(this.mainLevel),
     nakisLevel: this.nakisLevel ?? 1,
