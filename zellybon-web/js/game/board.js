@@ -128,10 +128,9 @@ export function trySwap(board, a, b) {
  *   comboLevel: number
  * }[]}
  */
-export function resolve(board, rng) {
-  const { size, colors, cells } = board;
+export function resolve(board, rng, startComboLevel = 0) {
   const steps = [];
-  let comboLevel = 0;
+  let comboLevel = startComboLevel;
 
   while (comboLevel < 50) {
     const groups = findMatches(board);
@@ -139,37 +138,61 @@ export function resolve(board, rng) {
 
     const clearedSet = new Set();
     for (const g of groups) for (const i of g.cells) clearedSet.add(i);
-    const cleared = [...clearedSet].sort((a, b) => a - b).map((index) => ({ index, color: cells[index] }));
-    for (const i of clearedSet) cells[i] = null;
-
-    const falls = [];
-    const spawns = [];
-    for (let c = 0; c < size; c++) {
-      let write = size - 1;
-      for (let r = size - 1; r >= 0; r--) {
-        const i = r * size + c;
-        if (cells[i] === null) continue;
-        if (r !== write) {
-          const to = write * size + c;
-          cells[to] = cells[i];
-          cells[i] = null;
-          falls.push({ from: i, to, color: cells[to] });
-        }
-        write--;
-      }
-      const missing = write + 1;
-      for (let r = 0; r < missing; r++) {
-        const to = r * size + c;
-        const color = rng.int(colors);
-        cells[to] = color;
-        spawns.push({ to, color, startRow: r - missing });
-      }
-    }
-
-    steps.push({ groups, cleared, falls, spawns, comboLevel });
+    steps.push({ groups, ...clearAndFill(board, rng, clearedSet), comboLevel });
     comboLevel++;
   }
   return steps;
+}
+
+// Verilen hücreleri temizler, jöleleri düşürür ve boşlukları doldurur.
+function clearAndFill(board, rng, clearedSet) {
+  const { size, colors, cells } = board;
+  const cleared = [...clearedSet].sort((a, b) => a - b).map((index) => ({ index, color: cells[index] }));
+  for (const i of clearedSet) cells[i] = null;
+
+  const falls = [];
+  const spawns = [];
+  for (let c = 0; c < size; c++) {
+    let write = size - 1;
+    for (let r = size - 1; r >= 0; r--) {
+      const i = r * size + c;
+      if (cells[i] === null) continue;
+      if (r !== write) {
+        const to = write * size + c;
+        cells[to] = cells[i];
+        cells[i] = null;
+        falls.push({ from: i, to, color: cells[to] });
+      }
+      write--;
+    }
+    const missing = write + 1;
+    for (let r = 0; r < missing; r++) {
+      const to = r * size + c;
+      const color = rng.int(colors);
+      cells[to] = color;
+      spawns.push({ to, color, startRow: r - missing });
+    }
+  }
+  return { cleared, falls, spawns };
+}
+
+/**
+ * Joker patlatması: verilen hücreleri eşleşme olmadan temizler, ardından zincirlemeleri çözer.
+ * İlk adım `blast: true` taşır (grup yoktur); sonraki adımlar normal zincirleme adımlarıdır.
+ */
+export function blast(board, rng, indices, origin = indices[0]) {
+  const n = board.size * board.size;
+  const set = new Set(indices.filter((i) => i >= 0 && i < n && board.cells[i] !== null));
+  if (set.size === 0) return [];
+  const first = { groups: [], ...clearAndFill(board, rng, set), comboLevel: 0, blast: true, origin };
+  return [first, ...resolve(board, rng, 1)];
+}
+
+/** Tahtadaki belirli bir rengin tüm hücreleri. */
+export function cellsOfColor(board, color) {
+  const out = [];
+  board.cells.forEach((c, i) => c === color && out.push(i));
+  return out;
 }
 
 /** Eşleşme oluşturan ilk hamleyi döndürür ({a, b}) ya da hiç yoksa null. */

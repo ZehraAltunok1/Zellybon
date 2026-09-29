@@ -32,13 +32,21 @@ npm test
 
 | Dosya | Görev |
 |---|---|
+| `js/shooter/levels.js` | Jöle Atış bölümleri (piksel resimler, zorluk ayarları) |
+| `js/shooter/engine.js` | Jöle Atış kuralları: yol, atış, bekleme kutuları (DOM'suz) |
+| `js/shooter/renderer.js` | Jöle Atış çizimi ve animasyonları |
+| `js/shooter/game.js` | Jöle Atış kontrolcüsü |
 | `js/game/rng.js` | Seed'li rastgele üreteç (mulberry32) |
-| `js/game/board.js` | Tahta, eşleşme, düşme, doldurma, karıştırma (DOM'suz) |
+| `js/game/board.js` | Jöle Patlat tahtası: eşleşme, düşme, joker patlatması (DOM'suz) |
 | `js/game/scoring.js` | Puan, kombo, Isı Barı / Şeker Fırtınası (DOM'suz) |
-| `js/game/renderer.js` | Canvas 2D çizim ve animasyonlar |
+| `js/game/levels.js` | Jöle Patlat'ın 20 bölümü, yıldız ve kilit kuralları |
+| `js/game/jokers.js` | Joker tanımları ve kazanma yolları |
+| `js/game/renderer.js` | Jöle Patlat çizimi ve animasyonları |
 | `js/game/input.js` | Kaydırma ve dokun-dokun algılama |
-| `js/game/game.js` | Hızlı Tur kontrolcüsü (süre, akış) |
+| `js/game/game.js` | Jöle Patlat kontrolcüsü (Hızlı Tur + bölüm modu + jokerler) |
+| `js/session.js` | Kullanıcı durumu, can sayacı, ödül listesi |
 | `js/api.js` | Backend istekleri, JWT saklama |
-| `js/auth.js` | Giriş/kayıt formu |
-| `js/screens/*` | Menü, sonuç, rekor ekranları |
-| `js/main.js` | Başlatma ve ekran geçişleri |
+| `js/screens/*` | Ana menü, Jöle Patlat merkezi, bölüm haritası, sonuç ve rekor ekranları |
+| `js/main.js` | Başlatma ve oyunlar arası akış |
+
+Testler `tests/` klasöründe. Otomatik bir oyuncu Jöle Atış'ın her bölümünün kazanılabilir olduğunu doğrular.

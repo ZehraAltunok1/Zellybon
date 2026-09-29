@@ -1,25 +1,11 @@
+// Jöle Patlat sonuç ekranları: Hızlı Tur ve bölüm.
+
 import { Api } from '../api.js';
+import { getUser, setUser, renderRewards } from '../session.js';
+import { LEVELS } from '../game/levels.js';
+import { launchConfetti } from './confetti.js';
 
-const CONFETTI_COLORS = ['#FF3B5C', '#FF8C1A', '#FFD60A', '#3DDC84', '#2D9CFF', '#A259FF', '#FFFFFF'];
-
-function fmt(n) {
-  return n.toLocaleString('tr-TR');
-}
-
-function launchConfetti(container) {
-  container.replaceChildren();
-  for (let i = 0; i < 70; i++) {
-    const piece = document.createElement('span');
-    piece.className = 'confetti';
-    piece.style.left = `${Math.random() * 100}%`;
-    piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
-    piece.style.animationDelay = `${Math.random() * 0.6}s`;
-    piece.style.animationDuration = `${1.8 + Math.random() * 1.4}s`;
-    piece.style.setProperty('--drift', `${(Math.random() - 0.5) * 160}px`);
-    piece.style.setProperty('--spin', `${Math.random() * 720 - 360}deg`);
-    container.appendChild(piece);
-  }
-}
+const fmt = (n) => (n ?? 0).toLocaleString('tr-TR');
 
 function animateCount(el, to) {
   const start = performance.now();
@@ -32,52 +18,99 @@ function animateCount(el, to) {
   requestAnimationFrame(step);
 }
 
-/**
- * Sonuç ekranını gösterir ve skoru sunucuya gönderir.
- * @returns {Promise<number|null>} güncel en iyi skor (kaydedilemezse null)
- */
-export async function showResult(result, user) {
-  const scoreEl = document.getElementById('result-score');
+/** Hızlı Tur sonucu: skoru kaydeder, rekoru ve ödülleri gösterir. */
+export async function showQuickResult(result, { cameFromNoLives = false } = {}) {
+  const user = getUser();
   const bestEl = document.getElementById('result-best');
   const badge = document.getElementById('result-badge');
   const statusEl = document.getElementById('result-status');
   const retryBtn = document.getElementById('result-retry-save');
+  const rewardsEl = document.getElementById('result-rewards');
+  const toMain = document.getElementById('result-to-main');
   const confetti = document.getElementById('confetti');
 
-  animateCount(scoreEl, result.score);
+  animateCount(document.getElementById('result-score'), result.score);
   document.getElementById('result-combo').textContent = fmt(result.maxCombo);
   document.getElementById('result-jellies').textContent = fmt(result.jelliesPopped);
-  bestEl.textContent = fmt(user.bestScore ?? 0);
+  bestEl.textContent = fmt(user.bestScore);
   badge.hidden = true;
   confetti.replaceChildren();
   retryBtn.hidden = true;
-
-  const celebrate = (best) => {
-    bestEl.textContent = fmt(best);
-    badge.hidden = false;
-    launchConfetti(confetti);
-  };
+  toMain.hidden = true;
+  renderRewards(rewardsEl, []);
 
   const save = async () => {
     statusEl.textContent = 'Skor kaydediliyor…';
     retryBtn.hidden = true;
     try {
-      const { isNewBest, bestScore } = await Api.saveScore(result);
+      const res = await Api.saveScore({
+        score: result.score,
+        maxCombo: result.maxCombo,
+        jelliesPopped: result.jelliesPopped,
+        durationMs: result.durationMs,
+      });
+      setUser(res.user);
       statusEl.textContent = 'Skor kaydedildi ✓';
-      bestEl.textContent = fmt(bestScore);
-      if (isNewBest) celebrate(bestScore);
-      return bestScore;
+      bestEl.textContent = fmt(res.bestScore);
+      renderRewards(rewardsEl, res.rewards);
+      if (res.isNewBest) {
+        badge.hidden = false;
+        launchConfetti(confetti);
+      }
+      const gotLife = res.rewards.some((r) => r.type === 'life');
+      toMain.hidden = !(gotLife || cameFromNoLives) || res.user.lives.lives < 1;
     } catch (err) {
       statusEl.textContent = `Skor kaydedilemedi: ${err.message}`;
       retryBtn.hidden = false;
-      return null;
     }
   };
+  retryBtn.onclick = save;
+  await save();
+}
 
-  retryBtn.onclick = async () => {
-    const best = await save();
-    if (best !== null) user.bestScore = best;
-  };
+/** Bölüm sonucu: yıldızlar, bonus, ödüller. */
+export async function showLevelResult(result, { onNext, onRetry }) {
+  const level = LEVELS.find((l) => l.id === result.levelId);
+  const statusEl = document.getElementById('lr-status');
+  const rewardsEl = document.getElementById('lr-rewards');
+  const nextBtn = document.getElementById('lr-next');
+  const retryBtn = document.getElementById('lr-retry');
+  const confetti = document.getElementById('level-confetti');
 
-  return save();
+  document.getElementById('lr-title').textContent = result.won
+    ? `Bölüm ${level.id} geçildi!`
+    : `Bölüm ${level.id}: hamlen bitti`;
+  animateCount(document.getElementById('lr-score'), result.score);
+  document.getElementById('lr-bonus').textContent = result.won
+    ? (result.bonus ? `Artan ${result.movesLeft} hamle bonusu: +${fmt(result.bonus)}` : '')
+    : 'Hedefe ulaşamadın. Jokerlerle tekrar dene!';
+
+  const starsEl = document.getElementById('lr-stars');
+  starsEl.replaceChildren();
+  for (let i = 0; i < 3; i++) {
+    const s = document.createElement('span');
+    s.className = i < result.stars ? 'star on' : 'star';
+    s.style.animationDelay = `${0.25 + i * 0.25}s`;
+    s.textContent = '★';
+    starsEl.appendChild(s);
+  }
+
+  confetti.replaceChildren();
+  if (result.won) launchConfetti(confetti);
+  renderRewards(rewardsEl, []);
+  nextBtn.hidden = true;
+  retryBtn.hidden = result.won && result.stars === 3;
+  retryBtn.onclick = onRetry;
+  nextBtn.onclick = onNext;
+
+  statusEl.textContent = 'Kaydediliyor…';
+  try {
+    const res = await Api.levelResult(result.levelId, result);
+    setUser(res.user);
+    renderRewards(rewardsEl, res.rewards);
+    statusEl.textContent = '';
+    nextBtn.hidden = !(result.won && level.id < LEVELS.length);
+  } catch (err) {
+    statusEl.textContent = `Sonuç kaydedilemedi: ${err.message}`;
+  }
 }

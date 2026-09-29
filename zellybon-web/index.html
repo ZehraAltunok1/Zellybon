@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/screens.css">
   <script>
     // Farklı bir API adresi kullanmak için:
     // window.ZELLYBON_API_URL = 'https://zellybon-api.onrender.com/api';
@@ -26,7 +27,7 @@
     <!-- Giriş / Kayıt -->
     <section class="screen screen-center" data-screen="auth" hidden>
       <h1 class="logo">Zellybon</h1>
-      <p class="tagline">Patlat, zincirle, kendi rekorunu kır!</p>
+      <p class="tagline">Jöleni fırlat, küpleri patlat, resmi ortaya çıkar!</p>
       <form id="auth-form" class="card form" novalidate>
         <label>
           <span>Kullanıcı adı</span>
@@ -45,46 +46,156 @@
     </section>
 
     <!-- Ana menü -->
-    <section class="screen screen-center" data-screen="menu" hidden>
-      <p class="hello">Merhaba, <strong id="menu-username"></strong>!</p>
-      <h1 class="logo">Zellybon</h1>
-      <div class="best-pill">
-        <span>En iyin</span>
-        <strong id="menu-best">0</strong>
+    <section class="screen" data-screen="home" hidden>
+      <header class="home-head">
+        <p class="hello">Merhaba, <strong id="home-username"></strong>!</p>
+        <button class="btn-small" data-action="logout">Çıkış</button>
+      </header>
+      <h1 class="logo logo-small">Zellybon</h1>
+      <div class="lives-card card" data-lives>
+        <div class="hearts" aria-label="Canlar"></div>
+        <span class="lives-timer"></span>
       </div>
-      <button class="btn btn-primary btn-huge" data-action="play">OYNA</button>
-      <p class="muted small">60 saniye · hızlı eşleştir, Şeker Fırtınası'nı yakala!</p>
-      <div class="menu-row">
-        <button class="btn btn-secondary" data-action="records">Rekorlarım</button>
-        <button class="btn btn-ghost" data-action="logout">Çıkış</button>
+
+      <article class="game-card game-card-main">
+        <span class="game-card-tag">Ana oyun</span>
+        <h2>Jöle Atış</h2>
+        <p>Jöleni kaykay yoluna gönder, kendi rengindeki küpleri vursun. Tüm küpleri temizle, resmi ortaya çıkar!</p>
+        <p class="game-card-level" id="home-main-level"></p>
+        <button class="btn btn-primary btn-huge" data-action="main-play">OYNA</button>
+      </article>
+
+      <article class="game-card game-card-side">
+        <span class="game-card-tag">Can &amp; joker kazan</span>
+        <h2>Jöle Patlat</h2>
+        <p>Canın mı bitti? Eşleştirme oyununda puan topla, can ve joker kazan.</p>
+        <button class="btn btn-secondary" data-action="hub">Jöle Patlat'a git</button>
+      </article>
+    </section>
+
+    <!-- Ana oyun: Jöle Atış -->
+    <section class="screen screen-game" data-screen="shooter" hidden>
+      <header class="hud hud-shooter">
+        <button class="hud-quit" data-action="shooter-quit" aria-label="Bölümden çık">✕</button>
+        <div class="hud-box hud-title-box">
+          <strong id="shooter-title" class="hud-title"></strong>
+          <div class="progress" aria-label="Temizlenen küpler">
+            <div id="shooter-progress" class="progress-fill"></div>
+            <span id="shooter-progress-text" class="progress-text">%0</span>
+          </div>
+        </div>
+        <div class="hud-box">
+          <span class="hud-label">Yol</span>
+          <strong id="shooter-belt" class="hud-value hud-value-small">0/4</strong>
+        </div>
+      </header>
+      <div class="board-wrap board-wrap-shooter">
+        <canvas id="shooter-canvas"></canvas>
+        <p id="shooter-hint" class="game-hint"></p>
       </div>
     </section>
 
-    <!-- Oyun -->
+    <!-- Ana oyun sonucu -->
+    <section class="screen screen-center" data-screen="shooter-result" hidden>
+      <div id="shooter-confetti" class="confetti-layer" aria-hidden="true"></div>
+      <h2 id="sr-title" class="title"></h2>
+      <canvas id="sr-picture" class="picture" width="160" height="160"></canvas>
+      <p id="sr-text" class="muted"></p>
+      <div class="lives-card card" data-lives>
+        <div class="hearts"></div>
+        <span class="lives-timer"></span>
+      </div>
+      <p id="sr-status" class="muted small"></p>
+      <button id="sr-next" class="btn btn-primary" data-action="main-play">Sonraki Bölüm</button>
+      <button id="sr-retry" class="btn btn-primary" data-action="main-play">Tekrar Dene</button>
+      <button id="sr-earn" class="btn btn-secondary" data-action="hub">Can Kazan</button>
+      <button class="btn btn-ghost" data-action="home">Ana Menü</button>
+    </section>
+
+    <!-- Can bitti -->
+    <section class="screen screen-center" data-screen="nolives" hidden>
+      <div class="big-emoji" aria-hidden="true">💔</div>
+      <h2 class="title">Canın bitti!</h2>
+      <div class="lives-card card" data-lives>
+        <div class="hearts"></div>
+        <span class="lives-timer"></span>
+      </div>
+      <p class="muted">Beklemek istemiyor musun? Jöle Patlat'ta <strong>1.500+ puan</strong> yap ya da bir bölüm geç, can kazan!</p>
+      <button class="btn btn-primary" data-action="quick-play">Hızlı Tur oyna</button>
+      <button class="btn btn-secondary" data-action="hub">Jöle Patlat</button>
+      <button class="btn btn-ghost" data-action="home">Ana Menü</button>
+    </section>
+
+    <!-- Jöle Patlat merkezi -->
+    <section class="screen" data-screen="hub" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="home" aria-label="Ana menüye dön">‹</button>
+        <h2 class="title">Jöle Patlat</h2>
+      </header>
+      <div class="lives-card card" data-lives>
+        <div class="hearts"></div>
+        <span class="lives-timer"></span>
+      </div>
+      <div class="mode-grid">
+        <button class="mode-card" data-action="quick-play">
+          <span class="mode-icon">⏱️</span>
+          <strong>Hızlı Tur</strong>
+          <small>60 sn · En iyin: <b id="hub-best">0</b></small>
+          <small class="mode-reward">1.500+ puan = ❤️ +1 can</small>
+        </button>
+        <button class="mode-card" data-action="levels">
+          <span class="mode-icon">🗺️</span>
+          <strong>Bölümler</strong>
+          <small>⭐ <b id="hub-stars">0</b> / 60</small>
+          <small class="mode-reward">Her galibiyet = ❤️ +1 can</small>
+        </button>
+      </div>
+      <h3 class="subtitle">Jokerlerin</h3>
+      <div id="hub-jokers" class="joker-inventory"></div>
+      <details class="card how-to">
+        <summary>Jokerleri ve canları nasıl kazanırım?</summary>
+        <ul id="hub-how"></ul>
+      </details>
+      <button class="btn btn-ghost" data-action="records">Rekorlarım</button>
+    </section>
+
+    <!-- Jöle Patlat: bölüm haritası -->
+    <section class="screen" data-screen="levels" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="hub" aria-label="Geri">‹</button>
+        <h2 class="title">Bölümler</h2>
+        <span class="stars-total">⭐ <b id="levels-stars">0</b></span>
+      </header>
+      <ol id="level-map" class="level-map"></ol>
+    </section>
+
+    <!-- Jöle Patlat: oyun -->
     <section class="screen screen-game" data-screen="game" hidden>
       <header class="hud">
         <div class="hud-box">
-          <span class="hud-label">Süre</span>
-          <strong id="hud-time" class="hud-value">60</strong>
+          <span id="hud-primary-label" class="hud-label">Süre</span>
+          <strong id="hud-primary" class="hud-value">60</strong>
         </div>
         <div class="hud-box hud-score-box">
           <span class="hud-label">Skor</span>
           <strong id="hud-score" class="hud-value">0</strong>
         </div>
-        <button class="hud-quit" data-action="quit-game" aria-label="Turu bırak">✕</button>
+        <button class="hud-quit" data-action="game-quit" aria-label="Oyunu bırak">✕</button>
       </header>
       <div id="heat-bar" class="heat-bar" aria-label="Isı barı">
         <div id="heat-fill" class="heat-fill"></div>
         <span class="heat-text">ISI</span>
         <span class="storm-text">ŞEKER FIRTINASI x2</span>
       </div>
+      <div id="hud-goals" class="goals" hidden></div>
       <div class="board-wrap">
         <canvas id="board"></canvas>
+        <p id="game-hint" class="game-hint"></p>
       </div>
-      <p class="muted small hint">Jöleyi kaydır ya da iki komşu jöleye sırayla dokun.</p>
+      <div id="joker-bar" class="joker-bar"></div>
     </section>
 
-    <!-- Sonuç -->
+    <!-- Hızlı Tur sonucu -->
     <section class="screen screen-center" data-screen="result" hidden>
       <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
       <h2 class="title">Süre doldu!</h2>
@@ -95,16 +206,32 @@
         <div><span>En uzun kombo</span><strong id="result-combo">0</strong></div>
         <div><span>Patlatılan jöle</span><strong id="result-jellies">0</strong></div>
       </div>
+      <ul id="result-rewards" class="rewards" hidden></ul>
       <p id="result-status" class="muted small"></p>
       <button id="result-retry-save" class="btn btn-ghost" hidden>Tekrar kaydetmeyi dene</button>
-      <button class="btn btn-primary" data-action="play">Tekrar Oyna</button>
-      <button class="btn btn-secondary" data-action="menu">Menü</button>
+      <button class="btn btn-primary" data-action="quick-play">Tekrar Oyna</button>
+      <button id="result-to-main" class="btn btn-secondary" data-action="main-play" hidden>Jöle Atış'a dön</button>
+      <button class="btn btn-ghost" data-action="hub">Jöle Patlat</button>
+    </section>
+
+    <!-- Jöle Patlat bölüm sonucu -->
+    <section class="screen screen-center" data-screen="level-result" hidden>
+      <div id="level-confetti" class="confetti-layer" aria-hidden="true"></div>
+      <h2 id="lr-title" class="title"></h2>
+      <div id="lr-stars" class="stars-row" aria-label="Yıldızlar"></div>
+      <strong id="lr-score" class="big-score">0</strong>
+      <p id="lr-bonus" class="muted"></p>
+      <ul id="lr-rewards" class="rewards" hidden></ul>
+      <p id="lr-status" class="muted small"></p>
+      <button id="lr-next" class="btn btn-primary">Sonraki Bölüm</button>
+      <button id="lr-retry" class="btn btn-primary">Tekrar Dene</button>
+      <button class="btn btn-secondary" data-action="levels">Bölümler</button>
     </section>
 
     <!-- Rekorlarım -->
     <section class="screen" data-screen="records" hidden>
       <header class="page-head">
-        <button class="btn-back" data-action="menu" aria-label="Menüye dön">‹</button>
+        <button class="btn-back" data-action="hub" aria-label="Geri">‹</button>
         <h2 class="title">Rekorlarım</h2>
       </header>
       <div class="card stats-grid">
@@ -113,7 +240,7 @@
         <div><span>En uzun kombo</span><strong id="stat-combo">0</strong></div>
         <div><span>Toplam jöle</span><strong id="stat-jellies">0</strong></div>
       </div>
-      <h3 class="subtitle">En iyi 10 tur</h3>
+      <h3 class="subtitle">En iyi 10 Hızlı Tur</h3>
       <p id="records-status" class="muted"></p>
       <ol id="records-list" class="records"></ol>
     </section>

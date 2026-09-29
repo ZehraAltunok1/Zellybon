@@ -82,4 +82,13 @@ export const Api = {
   me: () => request('/me'),
   saveScore: (result) => request('/scores', { method: 'POST', body: result }),
   records: (mode = 'quick') => request(`/records?mode=${encodeURIComponent(mode)}`),
+
+  // Jöle Patlat
+  useJoker: (type) => request('/jokers/use', { method: 'POST', body: { type } }),
+  levelResult: (levelId, { won, score, stars }) =>
+    request(`/levels/${levelId}/result`, { method: 'POST', body: { won, score, stars } }),
+
+  // Ana oyun (Jöle Atış)
+  mainStart: (levelId) => request('/main/start', { method: 'POST', body: { levelId } }),
+  mainResult: (levelId, won) => request('/main/result', { method: 'POST', body: { levelId, won } }),
 };

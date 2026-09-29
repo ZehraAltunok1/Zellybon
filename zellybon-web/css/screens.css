@@ -1,0 +1,316 @@
+/* Ana menü, can sistemi, Jöle Atış ve Jöle Patlat ekranları */
+
+.home-head { display: flex; align-items: center; justify-content: space-between; }
+
+.btn-small {
+  font: inherit;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 4px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.logo-small { font-size: clamp(2.4rem, 12vw, 3.2rem); text-align: center; }
+
+/* ---------- Canlar ---------- */
+
+.lives-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+.hearts { display: flex; gap: 4px; font-size: 1.45rem; line-height: 1; }
+.heart.empty { opacity: 0.55; }
+.lives-timer { font-weight: 700; font-size: 0.95rem; opacity: 0.95; font-variant-numeric: tabular-nums; }
+.screen-center .lives-card { align-self: center; min-width: 260px; }
+
+/* ---------- Oyun kartları ---------- */
+
+.game-card {
+  position: relative;
+  border-radius: 26px;
+  padding: 20px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.game-card h2 { margin: 0; font-size: 2rem; line-height: 1; }
+.game-card p { margin: 0; line-height: 1.35; }
+
+.game-card-main {
+  background: linear-gradient(145deg, rgba(255, 159, 28, 0.35), rgba(255, 59, 92, 0.3));
+  box-shadow: 0 12px 30px rgba(43, 10, 61, 0.3);
+}
+
+.game-card-side { background: rgba(46, 196, 182, 0.22); }
+
+.game-card-tag {
+  align-self: flex-start;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(43, 10, 61, 0.35);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.game-card-level { font-weight: 800; color: #FFD60A; font-size: 1.1rem; }
+
+/* ---------- Jöle Atış ---------- */
+
+.hud-shooter { grid-template-columns: auto 1fr auto; }
+.hud-title-box { align-items: stretch; gap: 4px; padding: 6px 12px; }
+.hud-title { font-size: 1.05rem; line-height: 1.1; text-align: center; }
+.hud-value-small { font-size: 1.4rem; }
+
+.progress {
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(43, 10, 61, 0.4);
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, #3DDC84, #2EC4B6);
+  border-radius: inherit;
+  transition: transform 0.2s ease-out;
+}
+
+.progress-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(43, 10, 61, 0.6);
+}
+
+.board-wrap { position: relative; }
+.board-wrap-shooter { align-items: center; }
+#shooter-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+
+/* Oyun içi ipucu balonu */
+.game-hint {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  transform: translate(-50%, -8px);
+  margin: 0;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: rgba(43, 10, 61, 0.88);
+  color: var(--white);
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 2;
+}
+
+.game-hint.visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Sonuç ekranları ---------- */
+
+.picture {
+  align-self: center;
+  width: 160px;
+  height: 160px;
+  border-radius: 18px;
+  background: rgba(43, 10, 61, 0.55);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(43, 10, 61, 0.35);
+  animation: badge-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.picture[hidden] { display: none; }
+.big-emoji { font-size: 4rem; line-height: 1; }
+
+.rewards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rewards[hidden] { display: none; }
+
+.reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: rgba(255, 214, 10, 0.2);
+  border: 1px solid rgba(255, 214, 10, 0.55);
+  text-align: left;
+  animation: badge-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.reward-icon { font-size: 1.6rem; }
+.reward span:last-child { display: flex; flex-direction: column; line-height: 1.15; }
+.reward small { opacity: 0.85; }
+
+.stars-row { display: flex; justify-content: center; gap: 10px; font-size: 3.2rem; line-height: 1; }
+.star { color: rgba(255, 255, 255, 0.3); }
+.star.on { color: #FFD60A; text-shadow: 0 3px 0 #C99E00; animation: badge-pop 0.5s cubic-bezier(0.2, 1.8, 0.4, 1) both; }
+
+/* ---------- Jöle Patlat merkezi ---------- */
+
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.mode-card {
+  font: inherit;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 16px 10px;
+  border-radius: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.mode-card:active { transform: scale(0.96); }
+.mode-card strong { font-size: 1.3rem; }
+.mode-icon { font-size: 2.2rem; }
+.mode-reward { color: #FFD60A; font-weight: 700; text-align: center; }
+
+.joker-inventory { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+.joker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: 16px;
+  background: rgba(43, 10, 61, 0.28);
+}
+
+.joker-item .joker-icon { font-size: 1.7rem; }
+.joker-item small { font-size: 0.75rem; opacity: 0.9; text-align: center; line-height: 1.1; }
+
+.how-to summary { font-weight: 800; cursor: pointer; }
+.how-to ul { margin: 10px 0 0; padding-left: 20px; line-height: 1.45; }
+
+/* ---------- Bölüm haritası (yılan gibi kıvrılan yol) ---------- */
+
+.stars-total { margin-left: auto; font-weight: 800; font-size: 1.2rem; }
+
+.level-map {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: dense;
+  gap: 14px 10px;
+}
+
+.level-map li { display: flex; justify-content: center; }
+
+.level-node {
+  font: inherit;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #FFFFFF;
+  background: var(--primary);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 0 var(--primary-dark);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.level-node:active { transform: scale(0.93); }
+.level-node.done { background: var(--secondary); box-shadow: 0 5px 0 var(--secondary-dark); }
+
+.level-node.locked {
+  background: rgba(43, 10, 61, 0.35);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: none;
+  cursor: default;
+}
+
+.level-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+.level-stars { font-size: 0.8rem; color: #FFD60A; text-shadow: 0 1px 1px rgba(43, 10, 61, 0.7); letter-spacing: 1px; }
+
+/* ---------- Jöle Patlat hedefleri ve jokerler ---------- */
+
+.goals { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.goals[hidden] { display: none; }
+.heat-bar[hidden] { display: none; }
+
+.goal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(43, 10, 61, 0.35);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-chip.done { background: rgba(61, 220, 132, 0.45); }
+.goal-dot { width: 16px; height: 16px; border-radius: 5px; border: 2px solid rgba(255, 255, 255, 0.8); }
+
+.joker-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+.joker-btn {
+  position: relative;
+  min-height: 56px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  background: rgba(43, 10, 61, 0.3);
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+}
+
+.joker-btn:active { transform: scale(0.93); }
+.joker-btn .joker-icon { font-size: 1.7rem; }
+.joker-btn.empty { opacity: 0.45; }
+.joker-btn.active { background: #FFD60A; border-color: #FFFFFF; animation: pulse 0.8s ease-in-out infinite; }
+
+.joker-count {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 0.9rem;
+  line-height: 24px;
+  border: 2px solid #FFFFFF;
+}

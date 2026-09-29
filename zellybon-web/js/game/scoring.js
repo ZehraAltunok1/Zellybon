@@ -20,7 +20,10 @@ export function comboMultiplier(comboLevel) {
   return 1 + 0.5 * comboLevel;
 }
 
-export function createScoring() {
+export const BLAST_POINTS_PER_JELLY = 10;
+
+/** @param {{ heat?: boolean }} [opts] heat=false: Isı Barı ve Şeker Fırtınası kapalı (bölüm modu) */
+export function createScoring({ heat = true } = {}) {
   const s = {
     score: 0,
     maxCombo: 0,
@@ -35,7 +38,7 @@ export function createScoring() {
   const isStorm = (now) => now < s.stormUntil;
 
   function addHeat(amount, now) {
-    if (isStorm(now)) return;
+    if (!heat || isStorm(now)) return;
     s.heat = Math.min(1, s.heat + amount);
     if (s.heat >= 1) {
       s.stormUntil = now + HEAT.stormMs;
@@ -76,11 +79,18 @@ export function createScoring() {
     scoreStep(step, now) {
       const mult = comboMultiplier(step.comboLevel) * (isStorm(now) ? HEAT.stormMultiplier : 1);
       const perGroup = step.groups.map((g) => Math.round(groupPoints(g.cells.length) * mult));
-      const total = perGroup.reduce((a, b) => a + b, 0);
+      const total = step.blast
+        ? Math.round(step.cleared.length * BLAST_POINTS_PER_JELLY * mult)
+        : perGroup.reduce((a, b) => a + b, 0);
       s.score += total;
       s.jelliesPopped += step.cleared.length;
       if (step.comboLevel > 0) addHeat(HEAT.cascadeGain, now);
       return { total, perGroup, storm: isStorm(now) };
+    },
+
+    /** Bölüm sonu bonusu gibi doğrudan eklenen puan. */
+    addBonus(points) {
+      s.score += points;
     },
 
     /** Bir hamlenin tüm zinciri bitince: kombo = zincirdeki adım sayısı. */

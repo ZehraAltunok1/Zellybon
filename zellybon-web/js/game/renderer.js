@@ -210,6 +210,10 @@ export class Renderer {
       this._burst(s);
       pops.push(this.tween(s, { scale: 0, alpha: 0 }, 180, easing.inBack));
     }
+    if (step.blast && result.total > 0) {
+      const o = step.origin ?? step.cleared[0].index;
+      this._floatText(`+${result.total}`, o % size, Math.floor(o / size), '#FFFFFF', 1.1);
+    }
     step.groups.forEach((g, k) => {
       const cx = g.cells.reduce((a, i) => a + (i % size), 0) / g.cells.length;
       const cy = g.cells.reduce((a, i) => a + Math.floor(i / size), 0) / g.cells.length;

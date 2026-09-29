@@ -1,17 +1,24 @@
+// Jöle Patlat — Hızlı Tur skorları ve kişisel rekorlar.
+
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import requireAuth from '../middleware/requireAuth.js';
 import Score from '../models/Score.js';
 import User from '../models/User.js';
+import { quickRoundRewards, applyRewards, syncLives } from '../rewards.js';
 
 const router = Router();
 
 const isInt = (v) => Number.isInteger(v);
 
+// 60 sn + en fazla 3 Kum Saati (her biri +10 sn)
+const MIN_DURATION = 55000;
+const MAX_DURATION = 95000;
+
 router.post('/scores', requireAuth, async (req, res, next) => {
   try {
     const { score, maxCombo = 0, jelliesPopped = 0, durationMs } = req.body ?? {};
-    if (!isInt(durationMs) || durationMs < 55000 || durationMs > 65000) {
+    if (!isInt(durationMs) || durationMs < MIN_DURATION || durationMs > MAX_DURATION) {
       return res.status(400).json({ error: 'Geçersiz tur süresi.' });
     }
     if (!isInt(score) || score < 0 || score > 50000) {
@@ -20,21 +27,23 @@ router.post('/scores', requireAuth, async (req, res, next) => {
     if (!isInt(maxCombo) || maxCombo < 0 || maxCombo > 100) {
       return res.status(400).json({ error: 'Geçersiz kombo değeri.' });
     }
-    if (!isInt(jelliesPopped) || jelliesPopped < 0 || jelliesPopped > 5000) {
+    if (!isInt(jelliesPopped) || jelliesPopped < 0 || jelliesPopped > 8000) {
       return res.status(400).json({ error: 'Geçersiz jöle sayısı.' });
     }
 
-    await Score.create({ userId: req.userId, mode: 'quick', score, maxCombo, jelliesPopped, durationMs });
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
 
-    // Atomik güncelleme: yalnızca yeni skor mevcut rekordan büyükse bestScore değişir.
-    const updated = await User.findOneAndUpdate(
-      { _id: req.userId, bestScore: { $lt: score } },
-      { $set: { bestScore: score } },
-      { returnDocument: 'after' },
-    );
-    const isNewBest = Boolean(updated);
-    const user = updated ?? (await User.findById(req.userId));
-    res.status(201).json({ saved: true, isNewBest, bestScore: user?.bestScore ?? score });
+    await Score.create({ userId: user._id, mode: 'quick', score, maxCombo, jelliesPopped, durationMs });
+
+    const isNewBest = score > user.bestScore;
+    if (isNewBest) user.bestScore = score;
+    const rewards = quickRoundRewards({ score, isNewBest, maxCombo });
+    syncLives(user);
+    applyRewards(user, rewards);
+    await user.save();
+
+    res.status(201).json({ saved: true, isNewBest, bestScore: user.bestScore, rewards, user: user.toPublic() });
   } catch (err) {
     next(err);
   }

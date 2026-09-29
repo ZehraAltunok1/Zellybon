@@ -2,8 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import scoreRoutes from './routes/scores.js';
+import levelRoutes from './routes/levels.js';
+import jokerRoutes from './routes/jokers.js';
+import mainRoutes from './routes/main.js';
 import requireAuth from './middleware/requireAuth.js';
 import User from './models/User.js';
+import { syncLives } from './rewards.js';
 
 export function createApp({ corsOrigin = '' } = {}) {
   const app = express();
@@ -23,11 +27,16 @@ export function createApp({ corsOrigin = '' } = {}) {
 
   app.use('/api/auth', authRoutes);
   app.use('/api', scoreRoutes);
+  app.use('/api', levelRoutes);
+  app.use('/api', jokerRoutes);
+  app.use('/api', mainRoutes);
 
   app.get('/api/me', requireAuth, async (req, res, next) => {
     try {
       const user = await User.findById(req.userId);
       if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+      syncLives(user);
+      if (user.isModified()) await user.save();
       res.json({ user: user.toPublic() });
     } catch (err) {
       next(err);
