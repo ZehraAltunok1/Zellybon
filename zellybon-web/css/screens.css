@@ -47,24 +47,24 @@
 .game-card p { margin: 0; line-height: 1.35; }
 
 .game-card-main {
-  background: linear-gradient(145deg, rgba(255, 159, 28, 0.35), rgba(255, 59, 92, 0.3));
-  box-shadow: 0 12px 30px rgba(43, 10, 61, 0.3);
+  background: linear-gradient(145deg, rgba(234, 82, 73, 0.75), rgba(245, 138, 58, 0.6));
+  box-shadow: 0 12px 30px rgba(22, 44, 66, 0.3);
 }
 
-.game-card-side { background: rgba(46, 196, 182, 0.22); }
+.game-card-side { background: linear-gradient(145deg, rgba(88, 201, 91, 0.6), rgba(47, 138, 52, 0.55)); }
 
 .game-card-tag {
   align-self: flex-start;
   padding: 2px 12px;
   border-radius: 999px;
-  background: rgba(43, 10, 61, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.game-card-level { font-weight: 800; color: #FFD60A; font-size: 1.1rem; }
+.game-card-level { font-weight: 800; color: #EFCD43; font-size: 1.1rem; }
 
 /* ---------- Jöle Atış ---------- */
 
@@ -77,7 +77,7 @@
   position: relative;
   height: 18px;
   border-radius: 999px;
-  background: rgba(43, 10, 61, 0.4);
+  background: rgba(22, 44, 66, 0.4);
   overflow: hidden;
 }
 
@@ -86,7 +86,7 @@
   inset: 0;
   transform-origin: left center;
   transform: scaleX(0);
-  background: linear-gradient(90deg, #3DDC84, #2EC4B6);
+  background: linear-gradient(90deg, #58C95B, #32D4E0);
   border-radius: inherit;
   transition: transform 0.2s ease-out;
 }
@@ -98,7 +98,7 @@
   place-items: center;
   font-size: 0.8rem;
   font-weight: 800;
-  text-shadow: 0 1px 2px rgba(43, 10, 61, 0.6);
+  text-shadow: 0 1px 2px rgba(22, 44, 66, 0.6);
 }
 
 .board-wrap { position: relative; }
@@ -116,7 +116,7 @@
   max-width: calc(100% - 24px);
   padding: 8px 16px;
   border-radius: 16px;
-  background: rgba(43, 10, 61, 0.88);
+  background: rgba(22, 44, 66, 0.88);
   color: var(--white);
   font-weight: 700;
   text-align: center;
@@ -135,9 +135,9 @@
   width: 160px;
   height: 160px;
   border-radius: 18px;
-  background: rgba(43, 10, 61, 0.55);
+  background: rgba(22, 44, 66, 0.55);
   border: 3px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 10px 30px rgba(43, 10, 61, 0.35);
+  box-shadow: 0 10px 30px rgba(22, 44, 66, 0.35);
   animation: badge-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both;
 }
 
@@ -173,7 +173,7 @@
 
 .stars-row { display: flex; justify-content: center; gap: 10px; font-size: 3.2rem; line-height: 1; }
 .star { color: rgba(255, 255, 255, 0.3); }
-.star.on { color: #FFD60A; text-shadow: 0 3px 0 #C99E00; animation: badge-pop 0.5s cubic-bezier(0.2, 1.8, 0.4, 1) both; }
+.star.on { color: #EFCD43; text-shadow: 0 3px 0 #A78828; animation: badge-pop 0.5s cubic-bezier(0.2, 1.8, 0.4, 1) both; }
 
 /* ---------- Jöle Patlat merkezi ---------- */
 
@@ -197,7 +197,7 @@
 .mode-card:active { transform: scale(0.96); }
 .mode-card strong { font-size: 1.3rem; }
 .mode-icon { font-size: 2.2rem; }
-.mode-reward { color: #FFD60A; font-weight: 700; text-align: center; }
+.mode-reward { color: #EFCD43; font-weight: 700; text-align: center; }
 
 .joker-inventory { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
@@ -207,7 +207,7 @@
   align-items: center;
   padding: 8px 4px;
   border-radius: 16px;
-  background: rgba(43, 10, 61, 0.28);
+  background: rgba(22, 44, 66, 0.28);
 }
 
 .joker-item .joker-icon { font-size: 1.7rem; }
@@ -253,14 +253,14 @@
 .level-node.done { background: var(--secondary); box-shadow: 0 5px 0 var(--secondary-dark); }
 
 .level-node.locked {
-  background: rgba(43, 10, 61, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   border-color: rgba(255, 255, 255, 0.35);
   box-shadow: none;
   cursor: default;
 }
 
 .level-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
-.level-stars { font-size: 0.8rem; color: #FFD60A; text-shadow: 0 1px 1px rgba(43, 10, 61, 0.7); letter-spacing: 1px; }
+.level-stars { font-size: 0.8rem; color: #EFCD43; text-shadow: 0 1px 1px rgba(22, 44, 66, 0.7); letter-spacing: 1px; }
 
 /* ---------- Jöle Patlat hedefleri ve jokerler ---------- */
 
@@ -274,7 +274,7 @@
   gap: 6px;
   padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(43, 10, 61, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -289,7 +289,7 @@
   min-height: 56px;
   border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 18px;
-  background: rgba(43, 10, 61, 0.3);
+  background: rgba(22, 44, 66, 0.3);
   cursor: pointer;
   transition: transform 0.1s, background 0.15s;
 }
@@ -297,7 +297,7 @@
 .joker-btn:active { transform: scale(0.93); }
 .joker-btn .joker-icon { font-size: 1.7rem; }
 .joker-btn.empty { opacity: 0.45; }
-.joker-btn.active { background: #FFD60A; border-color: #FFFFFF; animation: pulse 0.8s ease-in-out infinite; }
+.joker-btn.active { background: #EFCD43; border-color: #FFFFFF; animation: pulse 0.8s ease-in-out infinite; }
 
 .joker-count {
   position: absolute;

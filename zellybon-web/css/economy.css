@@ -9,10 +9,10 @@
   gap: 6px;
   min-height: 40px;
   padding: 4px 14px;
-  border: 2px solid rgba(255, 194, 51, 0.7);
+  border: 2px solid rgba(239, 205, 67, 0.7);
   border-radius: 999px;
-  background: rgba(38, 26, 69, 0.45);
-  color: #FFE08A;
+  background: rgba(22, 44, 66, 0.45);
+  color: #FFF0A0;
   font-weight: 800;
   cursor: pointer;
 }
@@ -24,11 +24,11 @@
   margin: 0;
   padding: 6px 12px;
   border-radius: 14px;
-  background: rgba(38, 26, 69, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   font-weight: 700;
 }
 
-.chest-line.chest-now { background: rgba(255, 194, 51, 0.3); border: 1px solid rgba(255, 194, 51, 0.8); }
+.chest-line.chest-now { background: rgba(239, 205, 67, 0.3); border: 1px solid rgba(239, 205, 67, 0.8); }
 .chest-line[hidden] { display: none; }
 .lives-card[hidden] { display: none; }
 
@@ -46,14 +46,14 @@
   padding: 8px 4px 6px;
   border-radius: 18px;
   border: 2px solid rgba(255, 255, 255, 0.25);
-  background: rgba(38, 26, 69, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   cursor: pointer;
   transition: transform 0.1s;
 }
 
 .nakis-tile:active { transform: scale(0.95); }
-.nakis-tile.current { border-color: #FFC233; box-shadow: 0 0 18px rgba(255, 194, 51, 0.45); animation: pulse 1.8s ease-in-out infinite; }
-.nakis-tile.done { background: rgba(56, 211, 159, 0.2); border-color: rgba(56, 211, 159, 0.7); }
+.nakis-tile.current { border-color: #EFCD43; box-shadow: 0 0 18px rgba(239, 205, 67, 0.45); animation: pulse 1.8s ease-in-out infinite; }
+.nakis-tile.done { background: rgba(88, 201, 91, 0.2); border-color: rgba(88, 201, 91, 0.7); }
 .nakis-tile.locked { cursor: default; opacity: 0.75; }
 .nakis-tile-label { font-size: 0.78rem; font-weight: 700; line-height: 1.1; text-align: center; }
 .nakis-lock { position: absolute; top: 34px; font-size: 1.6rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)); }
@@ -67,7 +67,7 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #38D39F;
+  background: #58C95B;
   border: 2px solid #FFFFFF;
   font-weight: 800;
 }
@@ -78,21 +78,21 @@
 .game-card-nakis {
   background:
     radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.14) 1.5px, transparent 2px) 0 0 / 12px 12px,
-    linear-gradient(145deg, rgba(92, 200, 242, 0.32), rgba(47, 63, 158, 0.45));
+    linear-gradient(145deg, rgba(50, 212, 224, 0.55), rgba(49, 103, 154, 0.75));
 }
 .shop-btn { width: 100%; }
 
 /* ---------- Bölüm öncesi ---------- */
 
-.gummy-preview { align-self: center; filter: drop-shadow(0 8px 16px rgba(38, 26, 69, 0.35)); }
+.gummy-preview { align-self: center; filter: drop-shadow(0 8px 16px rgba(22, 44, 66, 0.35)); }
 
 .intro-card {
   display: flex;
   align-items: center;
   gap: 12px;
   text-align: left;
-  border-color: rgba(255, 194, 51, 0.7);
-  background: rgba(255, 194, 51, 0.16);
+  border-color: rgba(239, 205, 67, 0.7);
+  background: rgba(239, 205, 67, 0.16);
 }
 
 .intro-card[hidden] { display: none; }
@@ -109,14 +109,14 @@
   padding: 10px 14px;
   border-radius: 18px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  background: rgba(38, 26, 69, 0.3);
+  background: rgba(22, 44, 66, 0.3);
   text-align: left;
   cursor: pointer;
   transition: transform 0.1s, background 0.15s, border-color 0.15s;
 }
 
 .booster-card:active { transform: scale(0.97); }
-.booster-card.on { background: rgba(56, 211, 159, 0.3); border-color: #38D39F; }
+.booster-card.on { background: rgba(88, 201, 91, 0.3); border-color: #58C95B; }
 .booster-card:disabled { opacity: 0.5; cursor: default; }
 .booster-icon { font-size: 1.8rem; }
 .booster-text { display: flex; flex-direction: column; flex: 1; line-height: 1.15; }
@@ -171,9 +171,9 @@
 .chest-icon { font-size: 3rem; line-height: 1; animation: chest-wiggle 0.6s ease-in-out 0.9s 2; }
 .chest-bronze { background: linear-gradient(160deg, #D9A27A, #A8643B); }
 .chest-silver { background: linear-gradient(160deg, #E8ECF4, #9AA5BA); color: var(--ink); }
-.chest-gold { background: linear-gradient(160deg, #FFE08A, #E09F00); color: var(--ink); }
+.chest-gold { background: linear-gradient(160deg, #FFF0A0, #E09F00); color: var(--ink); }
 .chest-diamond { background: linear-gradient(160deg, #A5CCFF, #6523C7); }
-.chest-legend { background: linear-gradient(160deg, #FF6FB5, #9D5CFF, #4C8DFF); box-shadow: 0 0 30px rgba(255, 194, 51, 0.8); }
+.chest-legend { background: linear-gradient(160deg, #FF6FB5, #9D5CFF, #4C8DFF); box-shadow: 0 0 30px rgba(239, 205, 67, 0.8); }
 
 @keyframes chest-open {
   0% { transform: scale(0) rotate(-10deg); }

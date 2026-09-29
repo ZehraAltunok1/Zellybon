@@ -267,7 +267,7 @@ export class ShooterRenderer {
     }
 
     // Yol bandı
-    ctx.fillStyle = 'rgba(43, 10, 61, 0.35)';
+    ctx.fillStyle = 'rgba(22, 44, 66, 0.35)';
     roundRect(ctx, x0 - t, y0 - t, boardW + 2 * t, boardH + 2 * t, t * 0.9);
     ctx.fill();
     ctx.save();
@@ -379,7 +379,7 @@ export class ShooterRenderer {
     const fullSlots = state.slots.every(Boolean);
     state.slots.forEach((sh, i) => {
       const r = this.slotRect(i);
-      ctx.fillStyle = fullSlots ? 'rgba(255, 59, 92, 0.28)' : 'rgba(43, 10, 61, 0.35)';
+      ctx.fillStyle = fullSlots ? 'rgba(255, 59, 92, 0.28)' : 'rgba(22, 44, 66, 0.35)';
       roundRect(ctx, r.x, r.y, r.w, r.h, r.w * 0.25);
       ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.3)';

@@ -41,7 +41,7 @@ function strand(g, x1, y1, x2, y2, w, pal, { shadow = true, twistPhase = 0 } = {
     g.lineTo(x2 + ox, y2 + oy);
     g.stroke();
   };
-  if (shadow) line(w, 'rgba(40, 20, 10, 0.28)', w * 0.12, w * 0.18);
+  if (shadow) line(w, 'rgba(20, 30, 40, 0.28)', w * 0.12, w * 0.18);
   line(w, pal.dark);
   line(w * 0.74, pal.base);
   // Büküm: tele çapraz kısa çizgiler (ipliğin katları)
@@ -121,7 +121,7 @@ function renderSpool(color, size) {
   const bottom = s * 0.78;
   const bodyW = s * 0.5;
 
-  g.fillStyle = 'rgba(20, 8, 40, 0.28)';
+  g.fillStyle = 'rgba(12, 30, 48, 0.28)';
   g.beginPath();
   g.ellipse(cx, bottom + s * 0.07, s * 0.36, s * 0.06, 0, 0, TAU);
   g.fill();

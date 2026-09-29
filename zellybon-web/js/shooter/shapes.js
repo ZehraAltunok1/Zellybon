@@ -221,7 +221,7 @@ export function renderGummy({ shape, color, size, face = true }) {
   g.save();
   g.translate(0, s * 0.045);
   path();
-  g.fillStyle = 'rgba(20, 8, 40, 0.3)';
+  g.fillStyle = 'rgba(12, 30, 48, 0.3)';
   g.fill(rule);
   g.restore();
 

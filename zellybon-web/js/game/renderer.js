@@ -358,7 +358,7 @@ export class Renderer {
       ctx.font = `800 ${fs}px "Baloo 2", "Fredoka", system-ui, sans-serif`;
       ctx.globalAlpha = Math.min(1, t.life * 2);
       ctx.lineWidth = Math.max(2, fs * 0.16);
-      ctx.strokeStyle = '#2B0A3D';
+      ctx.strokeStyle = '#22364A';
       const x = pad + t.x * cell;
       const y = pad + t.y * cell;
       ctx.strokeText(t.text, x, y);

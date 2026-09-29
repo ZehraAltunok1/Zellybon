@@ -1,14 +1,15 @@
-/* Arayüz paleti: js/palette.js'deki jöle renkleriyle aynı aileden.
-   Arka plan gece mavisi → üzüm → pembe şeker; butonlar limon-altın ve elma yeşili. */
+/* Arayüz paleti: Car Parking Jam'in renk dili (bkz. js/palette.js).
+   Arka plan gök mavisi → çelik mavisi → gece laciverti; butonlar araba sarısı ve yeşili,
+   yazı ve gölgeler arduvaz. */
 :root {
-  --bg-from: #2A1B5E;
-  --bg-mid: #6A2FB0;
-  --bg-to: #F2659E;
-  --primary: #FFC233;
-  --primary-dark: #D98E04;
-  --secondary: #38D39F;
-  --secondary-dark: #0B9A6D;
-  --ink: #261A45;
+  --bg-from: #6AA3CE;
+  --bg-mid: #3F7BA8;
+  --bg-to: #1E4B71;
+  --primary: #EFCD43;
+  --primary-dark: #A78828;
+  --secondary: #58C95B;
+  --secondary-dark: #2F8A34;
+  --ink: #22364A;
   --white: #FFFFFF;
   --card: rgba(255, 255, 255, 0.13);
   --card-border: rgba(255, 255, 255, 0.24);
@@ -68,7 +69,7 @@ body[data-screen="game"] {
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--white);
-  text-shadow: 0 4px 0 #C2187A, 0 10px 24px rgba(43, 10, 61, 0.35);
+  text-shadow: 0 4px 0 #1E4B71, 0 10px 24px rgba(22, 44, 66, 0.35);
   animation: logo-bob 3s ease-in-out infinite;
 }
 
@@ -150,7 +151,7 @@ body[data-screen="game"] {
 
 .btn-primary {
   background: var(--primary);
-  box-shadow: 0 5px 0 var(--primary-dark), 0 10px 20px rgba(43, 10, 61, 0.25);
+  box-shadow: 0 5px 0 var(--primary-dark), 0 10px 20px rgba(22, 44, 66, 0.25);
   color: var(--ink);
 }
 
@@ -158,7 +159,7 @@ body[data-screen="game"] {
 
 .btn-secondary {
   background: var(--secondary);
-  box-shadow: 0 5px 0 var(--secondary-dark), 0 10px 20px rgba(43, 10, 61, 0.2);
+  box-shadow: 0 5px 0 var(--secondary-dark), 0 10px 20px rgba(22, 44, 66, 0.2);
   color: var(--ink);
 }
 
@@ -193,12 +194,12 @@ body[data-screen="game"] {
   gap: 10px;
   padding: 6px 20px;
   border-radius: 999px;
-  background: rgba(43, 10, 61, 0.28);
+  background: rgba(22, 44, 66, 0.28);
   font-size: 1.1rem;
   margin-bottom: 8px;
 }
 
-.best-pill strong { font-size: 1.6rem; color: #FFD60A; }
+.best-pill strong { font-size: 1.6rem; color: #EFCD43; }
 
 /* ---------- Oyun ekranı ---------- */
 
@@ -212,7 +213,7 @@ body[data-screen="game"] {
 }
 
 .hud-box {
-  background: rgba(43, 10, 61, 0.3);
+  background: rgba(22, 44, 66, 0.3);
   border-radius: 18px;
   padding: 4px 14px;
   display: flex;
@@ -222,13 +223,13 @@ body[data-screen="game"] {
 
 .hud-label { font-size: 0.8rem; font-weight: 700; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.08em; }
 .hud-value { font-size: 1.9rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.hud-score-box .hud-value { color: #FFD60A; }
+.hud-score-box .hud-value { color: #EFCD43; }
 
-.hud-urgent { color: #FFD1DA; animation: urgent 0.5s ease-in-out infinite alternate; }
+.hud-urgent { color: #FFC6D6; animation: urgent 0.5s ease-in-out infinite alternate; }
 
 @keyframes urgent {
   from { transform: scale(1); }
-  to { transform: scale(1.15); color: #FF3B5C; }
+  to { transform: scale(1.15); color: #EA5249; }
 }
 
 .hud-quit {
@@ -236,7 +237,7 @@ body[data-screen="game"] {
   min-height: 48px;
   border: none;
   border-radius: 16px;
-  background: rgba(43, 10, 61, 0.3);
+  background: rgba(22, 44, 66, 0.3);
   color: var(--white);
   font-size: 1.3rem;
   cursor: pointer;
@@ -246,7 +247,7 @@ body[data-screen="game"] {
   position: relative;
   height: 26px;
   border-radius: 999px;
-  background: rgba(43, 10, 61, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.35);
 }
@@ -256,7 +257,7 @@ body[data-screen="game"] {
   inset: 0;
   transform-origin: left center;
   transform: scaleX(0);
-  background: linear-gradient(90deg, #FFD60A, #FF8C1A, #FF3B5C);
+  background: linear-gradient(90deg, #EFCD43, #F58A3A, #EA5249);
   border-radius: inherit;
 }
 
@@ -268,7 +269,7 @@ body[data-screen="game"] {
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.12em;
-  text-shadow: 0 1px 2px rgba(43, 10, 61, 0.6);
+  text-shadow: 0 1px 2px rgba(22, 44, 66, 0.6);
 }
 
 .storm-text { opacity: 0; }
@@ -278,7 +279,7 @@ body[data-screen="game"] {
 .heat-bar.storm .storm-text { opacity: 1; animation: storm-text 0.4s ease-in-out infinite alternate; }
 
 .heat-bar.storm .heat-fill {
-  background: linear-gradient(90deg, #FF3B5C, #FF8C1A, #FFD60A, #3DDC84, #2D9CFF, #A259FF, #FF3B5C);
+  background: linear-gradient(90deg, #EA5249, #F58A3A, #EFCD43, #58C95B, #4C8DDC, #9B5FD6, #EA5249);
   background-size: 200% 100%;
   animation: rainbow 0.8s linear infinite;
 }
@@ -316,8 +317,8 @@ body[data-screen="game"] {
   font-size: clamp(3.6rem, 20vw, 5.5rem);
   font-weight: 800;
   line-height: 1;
-  color: #FFD60A;
-  text-shadow: 0 4px 0 #C2187A;
+  color: #EFCD43;
+  text-shadow: 0 4px 0 #1E4B71;
   font-variant-numeric: tabular-nums;
 }
 
@@ -327,12 +328,12 @@ body[data-screen="game"] {
   align-self: center;
   padding: 6px 22px;
   border-radius: 999px;
-  background: #FFD60A;
+  background: #EFCD43;
   color: var(--ink);
   font-weight: 800;
   font-size: 1.3rem;
   letter-spacing: 0.06em;
-  box-shadow: 0 4px 0 #C99E00;
+  box-shadow: 0 4px 0 #A78828;
   animation: badge-pop 0.6s cubic-bezier(0.2, 1.8, 0.4, 1) both, pulse 1.4s ease-in-out 0.6s infinite;
 }
 
@@ -390,7 +391,7 @@ body[data-screen="game"] {
   height: 48px;
   border: none;
   border-radius: 16px;
-  background: rgba(43, 10, 61, 0.3);
+  background: rgba(22, 44, 66, 0.3);
   color: var(--white);
   font-size: 2rem;
   line-height: 1;
@@ -429,13 +430,13 @@ body[data-screen="game"] {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(43, 10, 61, 0.35);
+  background: rgba(22, 44, 66, 0.35);
   font-weight: 800;
 }
 
-.record:nth-child(1) .record-rank { background: #FFD60A; color: var(--ink); }
+.record:nth-child(1) .record-rank { background: #EFCD43; color: var(--ink); }
 .record:nth-child(2) .record-rank { background: #E3E6F0; color: var(--ink); }
-.record:nth-child(3) .record-rank { background: #FF9F1C; color: var(--ink); }
+.record:nth-child(3) .record-rank { background: #F58A3A; color: var(--ink); }
 
 .record-main { display: flex; flex-direction: column; min-width: 0; }
 .record-main strong { font-size: 1.4rem; line-height: 1.1; }
