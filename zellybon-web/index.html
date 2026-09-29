@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#6A11CB">
+  <title>Zellybon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Farklı bir API adresi kullanmak için:
+    // window.ZELLYBON_API_URL = 'https://zellybon-api.onrender.com/api';
+  </script>
+</head>
+<body>
+  <main class="app">
+
+    <!-- Yükleniyor -->
+    <section class="screen screen-center" data-screen="loading" hidden>
+      <h1 class="logo">Zellybon</h1>
+      <p class="muted">Yükleniyor…</p>
+    </section>
+
+    <!-- Giriş / Kayıt -->
+    <section class="screen screen-center" data-screen="auth" hidden>
+      <h1 class="logo">Zellybon</h1>
+      <p class="tagline">Patlat, zincirle, kendi rekorunu kır!</p>
+      <form id="auth-form" class="card form" novalidate>
+        <label>
+          <span>Kullanıcı adı</span>
+          <input id="auth-username" name="username" autocomplete="username" autocapitalize="none"
+                 spellcheck="false" maxlength="16" placeholder="ör. jole_ustasi" required>
+        </label>
+        <label>
+          <span>Şifre</span>
+          <input id="auth-password" name="password" type="password" autocomplete="current-password"
+                 minlength="6" maxlength="100" placeholder="en az 6 karakter" required>
+        </label>
+        <p id="auth-error" class="form-error" role="alert" hidden></p>
+        <button type="submit" class="btn btn-primary" data-mode="login">Giriş</button>
+        <button type="submit" class="btn btn-secondary" data-mode="register">Kayıt Ol</button>
+      </form>
+    </section>
+
+    <!-- Ana menü -->
+    <section class="screen screen-center" data-screen="menu" hidden>
+      <p class="hello">Merhaba, <strong id="menu-username"></strong>!</p>
+      <h1 class="logo">Zellybon</h1>
+      <div class="best-pill">
+        <span>En iyin</span>
+        <strong id="menu-best">0</strong>
+      </div>
+      <button class="btn btn-primary btn-huge" data-action="play">OYNA</button>
+      <p class="muted small">60 saniye · hızlı eşleştir, Şeker Fırtınası'nı yakala!</p>
+      <div class="menu-row">
+        <button class="btn btn-secondary" data-action="records">Rekorlarım</button>
+        <button class="btn btn-ghost" data-action="logout">Çıkış</button>
+      </div>
+    </section>
+
+    <!-- Oyun -->
+    <section class="screen screen-game" data-screen="game" hidden>
+      <header class="hud">
+        <div class="hud-box">
+          <span class="hud-label">Süre</span>
+          <strong id="hud-time" class="hud-value">60</strong>
+        </div>
+        <div class="hud-box hud-score-box">
+          <span class="hud-label">Skor</span>
+          <strong id="hud-score" class="hud-value">0</strong>
+        </div>
+        <button class="hud-quit" data-action="quit-game" aria-label="Turu bırak">✕</button>
+      </header>
+      <div id="heat-bar" class="heat-bar" aria-label="Isı barı">
+        <div id="heat-fill" class="heat-fill"></div>
+        <span class="heat-text">ISI</span>
+        <span class="storm-text">ŞEKER FIRTINASI x2</span>
+      </div>
+      <div class="board-wrap">
+        <canvas id="board"></canvas>
+      </div>
+      <p class="muted small hint">Jöleyi kaydır ya da iki komşu jöleye sırayla dokun.</p>
+    </section>
+
+    <!-- Sonuç -->
+    <section class="screen screen-center" data-screen="result" hidden>
+      <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
+      <h2 class="title">Süre doldu!</h2>
+      <div id="result-badge" class="new-best" hidden>YENİ REKOR!</div>
+      <strong id="result-score" class="big-score">0</strong>
+      <p class="best-line">En iyin: <strong id="result-best">0</strong></p>
+      <div class="card stats-row">
+        <div><span>En uzun kombo</span><strong id="result-combo">0</strong></div>
+        <div><span>Patlatılan jöle</span><strong id="result-jellies">0</strong></div>
+      </div>
+      <p id="result-status" class="muted small"></p>
+      <button id="result-retry-save" class="btn btn-ghost" hidden>Tekrar kaydetmeyi dene</button>
+      <button class="btn btn-primary" data-action="play">Tekrar Oyna</button>
+      <button class="btn btn-secondary" data-action="menu">Menü</button>
+    </section>
+
+    <!-- Rekorlarım -->
+    <section class="screen" data-screen="records" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="menu" aria-label="Menüye dön">‹</button>
+        <h2 class="title">Rekorlarım</h2>
+      </header>
+      <div class="card stats-grid">
+        <div><span>Oynanan tur</span><strong id="stat-games">0</strong></div>
+        <div><span>En iyi skor</span><strong id="stat-best">0</strong></div>
+        <div><span>En uzun kombo</span><strong id="stat-combo">0</strong></div>
+        <div><span>Toplam jöle</span><strong id="stat-jellies">0</strong></div>
+      </div>
+      <h3 class="subtitle">En iyi 10 tur</h3>
+      <p id="records-status" class="muted"></p>
+      <ol id="records-list" class="records"></ol>
+    </section>
+
+  </main>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
