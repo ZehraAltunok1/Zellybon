@@ -2,6 +2,7 @@
 
 import { REWARD_LABELS } from './economy.js';
 import { CHEST_INFO } from './chest.js';
+import { RARITY, rarityOf, rewardIcon } from './rewardArt.js';
 
 let user = null;
 let syncedAt = 0;
@@ -61,26 +62,52 @@ export function renderLives(el) {
   }
 }
 
-/** Ödül listesini (❤️ +1 Can · Bölüm geçildi …) bir listeye çizer. */
+const RARITY_ORDER = ['legendary', 'epic', 'rare', 'common'];
+
+/**
+ * Ödülleri değer kademesine göre renklenen kartlar olarak çizer: 3B simge, büyük miktar, ad ve kademe.
+ * Aynı türden ödüller tek kartta toplanır; en değerli ödül önce gelir.
+ */
 export function renderRewards(listEl, rewards = []) {
   listEl.replaceChildren();
   listEl.hidden = rewards.length === 0;
+  listEl.classList.add('reward-grid');
+
+  const merged = new Map();
   for (const r of rewards) {
-    const label = r.type === 'chest'
-      ? { icon: '🎁', name: CHEST_INFO[r.tier]?.name ?? 'Sandık' }
-      : REWARD_LABELS[r.type] ?? { icon: '🎁', name: r.type };
-    const li = document.createElement('li');
-    li.className = 'reward';
-    const icon = document.createElement('span');
-    icon.className = 'reward-icon';
-    icon.textContent = label.icon;
-    const text = document.createElement('span');
-    const strong = document.createElement('strong');
-    strong.textContent = `+${r.count} ${label.name}`;
-    const small = document.createElement('small');
-    small.textContent = r.reason;
-    text.append(strong, small);
-    li.append(icon, text);
-    listEl.appendChild(li);
+    const key = `${r.type}-${r.tier ?? ''}`;
+    const m = merged.get(key);
+    if (m) {
+      m.count += r.count;
+      if (r.reason && !m.reasons.includes(r.reason)) m.reasons.push(r.reason);
+    } else {
+      merged.set(key, { ...r, reasons: r.reason ? [r.reason] : [] });
+    }
   }
+  const items = [...merged.values()]
+    .map((r) => ({ ...r, rarity: rarityOf(r) }))
+    .sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
+
+  items.forEach((r, i) => {
+    const name = r.type === 'chest'
+      ? CHEST_INFO[r.tier]?.name ?? 'Sandık'
+      : REWARD_LABELS[r.type]?.name ?? r.type;
+    const li = document.createElement('li');
+    li.className = `reward-tile rarity-${r.rarity}`;
+    li.style.animationDelay = `${i * 0.12}s`;
+    const ribbon = document.createElement('span');
+    ribbon.className = 'reward-ribbon';
+    ribbon.textContent = RARITY[r.rarity].name;
+    const amount = document.createElement('strong');
+    amount.className = 'reward-amount';
+    amount.textContent = `+${r.count.toLocaleString('tr-TR')}`;
+    const label = document.createElement('span');
+    label.className = 'reward-name';
+    label.textContent = name;
+    const why = document.createElement('small');
+    why.className = 'reward-why';
+    why.textContent = r.reasons.join(' · ');
+    li.append(ribbon, rewardIcon(r, 58), amount, label, why);
+    listEl.appendChild(li);
+  });
 }

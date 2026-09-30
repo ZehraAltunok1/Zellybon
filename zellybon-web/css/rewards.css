@@ -1,5 +1,83 @@
 /* Kısayollar, sandıklar, açılış penceresi, günlük ödüller ve görevler */
 
+/* ---------- Ödül kartları (değer kademesine göre dolu renk) ---------- */
+
+.rewards.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(98px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.reward-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 18px 6px 10px;
+  border-radius: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  text-align: center;
+  color: #FFFFFF;
+  box-shadow: 0 6px 0 rgba(12, 30, 48, 0.35), 0 10px 22px rgba(12, 30, 48, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+  animation: reward-in 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/* üstten geçen parıltı */
+.reward-tile::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 40%;
+  height: 180%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: rotate(20deg);
+  animation: reward-shine 2.6s ease-in-out 0.8s infinite;
+}
+
+.rarity-common { background: linear-gradient(170deg, #6D8FB3, #3A5F84); }
+.rarity-rare { background: linear-gradient(170deg, #5BA3F0, #2358A8); }
+.rarity-epic { background: linear-gradient(170deg, #B77BF0, #5E2E91); box-shadow: 0 6px 0 #3E1C66, 0 0 22px rgba(183, 123, 240, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.45); }
+.rarity-legendary { background: linear-gradient(170deg, #FFE27A, #E08A00); color: #3A2600; box-shadow: 0 6px 0 #8A5500, 0 0 26px rgba(255, 214, 90, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.6); }
+
+.reward-ribbon {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(12, 30, 48, 0.45);
+  color: #FFFFFF;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reward-tile canvas { filter: drop-shadow(0 4px 4px rgba(12, 30, 48, 0.4)); }
+.reward-amount { font-size: 1.5rem; font-weight: 800; line-height: 1; text-shadow: 0 2px 0 rgba(12, 30, 48, 0.35); }
+.rarity-legendary .reward-amount { text-shadow: 0 2px 0 rgba(255, 255, 255, 0.5); }
+.reward-name { font-size: 0.82rem; font-weight: 800; line-height: 1.1; }
+.reward-why { font-size: 0.66rem; opacity: 0.85; line-height: 1.15; }
+
+@keyframes reward-in {
+  0% { transform: scale(0.3) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes reward-shine {
+  0% { left: -60%; }
+  45%, 100% { left: 130%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reward-tile, .reward-tile::after { animation: none; }
+}
+
 /* ---------- Ana sayfa oyun kartı çizimleri ---------- */
 
 .game-art-wrap { position: relative; margin: -6px -4px 2px; }

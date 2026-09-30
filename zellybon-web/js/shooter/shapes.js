@@ -214,9 +214,9 @@ export function renderGummy({ shape, color, size, face = true }) {
   };
 
   // Şekli biraz küçültüp ortala: kontur, kalınlık ve gölge için yer kalsın
-  g.translate(s * 0.06, s * 0.015);
-  g.scale(0.88, 0.88);
-  const depth = s * 0.075; // oyuncak gibi kalınlık (yan yüz)
+  g.translate(s * 0.065, s * 0.01);
+  g.scale(0.87, 0.87);
+  const depth = s * 0.1; // oyuncak gibi kalınlık (yan yüz)
 
   // 1) Yumuşak gölge (kalınlığın altında)
   g.save();
@@ -295,15 +295,45 @@ export function renderGummy({ shape, color, size, face = true }) {
   g.arc((h.x + h.rx * 1.3) * s, (h.y - h.ry * 0.2) * s, 0.018 * s, 0, TAU);
   g.fill();
 
-  // 6b) Kenar ışığı: sol üst kenarda ince parlak hat (plastik/jöle yüzey)
+  // 6b) Camsı üst parlaklık: üst yarıya yumuşak beyaz perde
+  const gloss = g.createLinearGradient(0, 0, 0, s * 0.55);
+  gloss.addColorStop(0, 'rgba(255,255,255,0.38)');
+  gloss.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gloss;
+  g.fillRect(0, 0, s, s * 0.55);
+
+  // 6c) Kenar ışığı: sol üst kenarda keskin parlama çizgisi (plastik/jöle yüzey)
+  g.save();
+  g.beginPath();
+  g.rect(0, 0, s * 0.62, s * 0.58);
+  g.clip();
+  g.translate(s * 0.022, s * 0.026);
+  path();
+  g.lineWidth = s * 0.045;
+  g.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  g.stroke();
+  g.restore();
   g.save();
   g.translate(s * 0.012, s * 0.016);
   path();
-  g.lineWidth = s * 0.03;
-  g.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  g.lineWidth = s * 0.02;
+  g.strokeStyle = 'rgba(255, 255, 255, 0.4)';
   g.stroke();
   g.restore();
   g.restore();
+
+  // 6d) Parıltı: vurgunun yanında dört köşeli yıldız
+  const sx = (h.x + h.rx * 1.9) * s;
+  const sy = (h.y - h.ry * 1.2) * s;
+  const sr = s * 0.055;
+  g.fillStyle = 'rgba(255,255,255,0.95)';
+  g.beginPath();
+  g.moveTo(sx, sy - sr);
+  g.quadraticCurveTo(sx, sy, sx + sr, sy);
+  g.quadraticCurveTo(sx, sy, sx, sy + sr);
+  g.quadraticCurveTo(sx, sy, sx - sr, sy);
+  g.quadraticCurveTo(sx, sy, sx, sy - sr);
+  g.fill();
 
   // 7) Süsler ve yüz
   def.decorate?.(g, s, pal);
@@ -324,7 +354,7 @@ export function renderCube(color, size) {
   const g = c.getContext('2d');
   const inset = s * 0.04;
   const w = s - inset * 2;
-  const side = w * 0.16;     // yan yüz yüksekliği
+  const side = w * 0.2;      // yan yüz yüksekliği
   const top = w - side;       // üst yüz yüksekliği
   const r = w * 0.2;
   const rr = (y, h) => {
@@ -364,10 +394,18 @@ export function renderCube(color, size) {
   g.lineWidth = s * 0.06;
   rr(inset - s * 0.01, top);
   g.stroke();
-  // parlama
-  g.fillStyle = 'rgba(255,255,255,0.5)';
+  // camsı üst parlaklık ve keskin parlama
+  const gloss = g.createLinearGradient(0, inset, 0, inset + top * 0.55);
+  gloss.addColorStop(0, 'rgba(255,255,255,0.45)');
+  gloss.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gloss;
+  g.fillRect(inset, inset, w, top * 0.55);
+  g.fillStyle = 'rgba(255,255,255,0.75)';
   g.beginPath();
-  g.ellipse(s * 0.36, s * 0.22, s * 0.2, s * 0.07, -0.2, 0, TAU);
+  g.ellipse(s * 0.34, s * 0.2, s * 0.18, s * 0.055, -0.2, 0, TAU);
+  g.fill();
+  g.beginPath();
+  g.arc(s * 0.62, s * 0.18, s * 0.03, 0, TAU);
   g.fill();
   g.restore();
 

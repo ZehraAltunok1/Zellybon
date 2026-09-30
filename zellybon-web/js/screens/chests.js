@@ -5,6 +5,29 @@ import { getUser, setUser, renderRewards } from '../session.js';
 import { CHEST_INFO, CHEST_ORDER, paintChestCanvas } from '../chest.js';
 
 let animRaf = 0;
+let listRaf = 0;
+
+// Sandıklarım ekranı açıkken kart sandıkları canlanır (aura nabzı, parlama geçişi); ekran kapanınca durur
+function animateList() {
+  cancelAnimationFrame(listRaf);
+  const tick = (now) => {
+    if (document.body.dataset.screen !== 'chests') return;
+    document.querySelectorAll('#chests-grid canvas[data-tier], #chests-legend canvas[data-tier]').forEach((c) => {
+      paintChestCanvas(c, c.dataset.tier, Number(c.dataset.size), { time: now + Number(c.dataset.offset) });
+    });
+    listRaf = requestAnimationFrame(tick);
+  };
+  listRaf = requestAnimationFrame(tick);
+}
+
+function chestCanvas(tier, size, offset) {
+  const c = document.createElement('canvas');
+  c.dataset.tier = tier;
+  c.dataset.size = String(size);
+  c.dataset.offset = String(offset);
+  paintChestCanvas(c, tier, size, { time: offset });
+  return c;
+}
 
 export function renderChests() {
   const user = getUser();
@@ -22,8 +45,7 @@ export function renderChests() {
     const info = CHEST_INFO[chest.tier];
     const card = document.createElement('div');
     card.className = `chest-card tier-${chest.tier}`;
-    const canvas = document.createElement('canvas');
-    paintChestCanvas(canvas, chest.tier, 104);
+    const canvas = chestCanvas(chest.tier, 104, grid.children.length * 700);
     const name = document.createElement('strong');
     name.textContent = info.name;
     const source = document.createElement('small');
@@ -45,13 +67,13 @@ export function renderChests() {
     const info = CHEST_INFO[tier];
     const item = document.createElement('div');
     item.className = 'legend-item';
-    const canvas = document.createElement('canvas');
-    paintChestCanvas(canvas, tier, 52);
+    const canvas = chestCanvas(tier, 52, CHEST_ORDER.indexOf(tier) * 500);
     const label = document.createElement('small');
     label.textContent = `${info.name.replace(' Sandık', '')} · 🔑${info.keys}`;
     item.append(canvas, label);
     legend.appendChild(item);
   }
+  animateList();
 }
 
 // Açma animasyonu: sallanma → kapak açılır, ışık → ödüller

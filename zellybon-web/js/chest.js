@@ -33,6 +33,9 @@ export const CHEST_INFO = {
 
 export const CHEST_ORDER = ['bronze', 'silver', 'gold', 'diamond', 'legend'];
 
+// Sandığın arkasındaki ışık halkası (kademe rengi)
+const AURA = { bronze: '#FFB26B', silver: '#E3F0FF', gold: '#FFE07A', diamond: '#9BEFF5', legend: '#F7A8E8' };
+
 function rrect(g, x, y, w, h, r) {
   g.beginPath();
   g.moveTo(x + r, y);
@@ -80,7 +83,7 @@ export function drawChest(g, tier, cx, cy, s, { open = 0, time = 0 } = {}) {
   const baseTop = cy - s * 0.02;
   const baseH = s * 0.36;
   const lidH = s * 0.3;
-  const side = s * 0.06; // 3B yan yüz kalınlığı
+  const side = s * 0.085; // 3B yan yüz kalınlığı
   const trimW = s * 0.07;
 
   g.save();
@@ -114,6 +117,17 @@ export function drawChest(g, tier, cx, cy, s, { open = 0, time = 0 } = {}) {
     g.arc(cx, baseTop, s * 0.5, 0, Math.PI * 2);
     g.fill();
   }
+
+  // Kademe aurası: değerli sandık daha güçlü parlar
+  const auraPower = { bronze: 0.35, silver: 0.45, gold: 0.65, diamond: 0.75, legend: 0.9 }[tier] ?? 0.4;
+  const pulse = 0.75 + Math.sin(time / 420) * 0.25;
+  const aura = g.createRadialGradient(cx, baseTop, s * 0.1, cx, baseTop, s * 0.55);
+  aura.addColorStop(0, rgba(AURA[tier] ?? '#FFFFFF', auraPower * pulse));
+  aura.addColorStop(1, rgba(AURA[tier] ?? '#FFFFFF', 0));
+  g.fillStyle = aura;
+  g.beginPath();
+  g.arc(cx, baseTop, s * 0.55, 0, Math.PI * 2);
+  g.fill();
 
   // Zemin gölgesi
   g.fillStyle = 'rgba(12, 30, 48, 0.3)';
@@ -159,6 +173,15 @@ export function drawChest(g, tier, cx, cy, s, { open = 0, time = 0 } = {}) {
     g.strokeStyle = info.trimDark;
     g.lineWidth = Math.max(1, s * 0.012);
     g.stroke();
+    for (const ry of [baseTop + baseH * 0.25, baseTop + baseH * 0.75]) {
+      g.fillStyle = info.trimLight;
+      g.beginPath();
+      g.arc(bx, ry, s * 0.014, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = info.trimDark;
+      g.lineWidth = Math.max(0.8, s * 0.006);
+      g.stroke();
+    }
   }
 
   // ---- Kapak ----
@@ -250,9 +273,62 @@ export function drawChest(g, tier, cx, cy, s, { open = 0, time = 0 } = {}) {
     g.fill();
   }
 
+  // Üzerinden geçen parlama (kapalıyken, ~2.6 sn'de bir)
+  if (open === 0) {
+    const sweep = (time % 2600) / 2600;
+    if (sweep < 0.45) {
+      const k = sweep / 0.45;
+      g.save();
+      rrect(g, x, baseTop - lidH * 0.95, w, baseH + lidH * 0.95, s * 0.08);
+      g.clip();
+      const bx = x - w * 0.3 + k * w * 1.6;
+      const band = g.createLinearGradient(bx - s * 0.12, 0, bx + s * 0.12, 0);
+      band.addColorStop(0, 'rgba(255,255,255,0)');
+      band.addColorStop(0.5, 'rgba(255,255,255,0.55)');
+      band.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = band;
+      g.translate(bx, baseTop);
+      g.rotate(0.35);
+      g.translate(-bx, -baseTop);
+      g.fillRect(bx - s * 0.12, baseTop - s, s * 0.24, s * 2);
+      g.restore();
+    }
+  }
+
+  // Açılırken fışkıran altın paralar ve yıldızlar
+  if (open > 0) {
+    for (let k = 0; k < 10; k++) {
+      const t = ((time / 900 + k * 0.137) % 1);
+      const a = -Math.PI / 2 + (k - 4.5) * 0.22;
+      const dist = t * s * 0.55 * open;
+      const px = cx + Math.cos(a) * dist;
+      const py = baseTop - s * 0.05 + Math.sin(a) * dist + t * t * s * 0.25;
+      const alpha = (1 - t) * open;
+      if (k % 2) {
+        g.fillStyle = rgba('#FFD23F', alpha);
+        g.beginPath();
+        g.ellipse(px, py, s * 0.035, s * 0.025, t * 6, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = rgba('#B07800', alpha);
+        g.lineWidth = Math.max(1, s * 0.008);
+        g.stroke();
+      } else {
+        const r = s * 0.03;
+        g.fillStyle = rgba('#FFFFFF', alpha);
+        g.beginPath();
+        g.moveTo(px, py - r * 1.6);
+        g.quadraticCurveTo(px, py, px + r * 1.6, py);
+        g.quadraticCurveTo(px, py, px, py + r * 1.6);
+        g.quadraticCurveTo(px, py, px - r * 1.6, py);
+        g.quadraticCurveTo(px, py, px, py - r * 1.6);
+        g.fill();
+      }
+    }
+  }
+
   // Efsane: etrafında parıltılar
-  if (tier === 'legend' || tier === 'diamond') {
-    const n = tier === 'legend' ? 5 : 3;
+  if (tier !== 'bronze') {
+    const n = { silver: 2, gold: 3, diamond: 4, legend: 6 }[tier] ?? 2;
     for (let k = 0; k < n; k++) {
       const a = time / 600 + (k * Math.PI * 2) / n;
       const px = cx + Math.cos(a) * s * 0.5;

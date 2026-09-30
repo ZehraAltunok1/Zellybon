@@ -19,6 +19,45 @@
 
 * { box-sizing: border-box; }
 
+/* Arka plan: gökyüzü gradyanı + yavaşça süzülen renkli ışık halkaları + ışık huzmeleri + şeker tozu deseni */
+html { background: var(--bg-mid); }
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(38% 26% at 12% 8%, rgba(255, 214, 120, 0.55), transparent 70%),
+    radial-gradient(34% 24% at 92% 22%, rgba(237, 141, 170, 0.55), transparent 70%),
+    radial-gradient(44% 30% at 85% 88%, rgba(50, 212, 224, 0.5), transparent 70%),
+    radial-gradient(40% 30% at 8% 78%, rgba(155, 95, 214, 0.5), transparent 70%),
+    linear-gradient(170deg, var(--bg-from) 0%, var(--bg-mid) 50%, var(--bg-to) 100%);
+  background-size: 140% 140%, 140% 140%, 140% 140%, 140% 140%, 100% 100%;
+  animation: bg-drift 24s ease-in-out infinite alternate;
+}
+
+body::after {
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.16) 1.4px, transparent 2px) 0 0 / 24px 24px,
+    radial-gradient(circle, rgba(255, 240, 160, 0.14) 1.2px, transparent 1.8px) 12px 12px / 24px 24px,
+    repeating-conic-gradient(from 0deg at 50% -10%, rgba(255, 255, 255, 0.06) 0deg 6deg, transparent 6deg 18deg);
+}
+
+@keyframes bg-drift {
+  0% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0 0; }
+  100% { background-position: 30% 20%, 70% 30%, 70% 70%, 30% 80%, 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
 html, body {
   margin: 0;
   height: 100%;
@@ -27,8 +66,7 @@ html, body {
 body {
   font-family: var(--font);
   color: var(--white);
-  background: linear-gradient(170deg, var(--bg-from) 0%, var(--bg-mid) 55%, var(--bg-to) 100%) fixed;
-  background-color: var(--bg-from);
+  background: transparent;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
 }
