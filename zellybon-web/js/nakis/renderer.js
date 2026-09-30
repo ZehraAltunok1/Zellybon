@@ -254,6 +254,47 @@ export class NakisRenderer extends ShooterRenderer {
     this.threads = this.threads.filter((t) => this.time - t.t0 < t.dur + 300);
   }
 
+  /** Nakış engel çizimleri: 'double' (×2 rozeti) ve 'knot' (ipten düğüm) */
+  _nakisOverlay(kind) {
+    this.nakisOverlayCache ??= {};
+    const key = `${kind}-${this.L.cube}`;
+    if (this.nakisOverlayCache[key]) return this.nakisOverlayCache[key];
+    const s = Math.max(6, Math.ceil(this.L.cube * this.dpr));
+    const c = document.createElement('canvas');
+    c.width = s;
+    c.height = s;
+    const g = c.getContext('2d');
+    if (kind === 'double') {
+      g.fillStyle = '#22364A';
+      g.beginPath();
+      g.arc(s * 0.72, s * 0.28, s * 0.22, 0, TAU);
+      g.fill();
+      g.strokeStyle = '#FFFFFF';
+      g.lineWidth = s * 0.05;
+      g.stroke();
+      g.fillStyle = '#FFFFFF';
+      g.font = `800 ${s * 0.26}px "Baloo 2", system-ui, sans-serif`;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText('×2', s * 0.72, s * 0.3);
+    } else {
+      // ipten düğüm: iç içe iki ilmek
+      g.lineCap = 'round';
+      for (const [w, col] of [[s * 0.16, '#6B3A1E'], [s * 0.09, '#D9A27A']]) {
+        g.lineWidth = w;
+        g.strokeStyle = col;
+        g.beginPath();
+        g.ellipse(s * 0.42, s * 0.5, s * 0.2, s * 0.13, 0.6, 0, TAU);
+        g.stroke();
+        g.beginPath();
+        g.ellipse(s * 0.58, s * 0.5, s * 0.2, s * 0.13, -0.6, 0, TAU);
+        g.stroke();
+      }
+    }
+    this.nakisOverlayCache[key] = c;
+    return c;
+  }
+
   _drawBoard() {
     const { ctx } = this;
     const { state } = this.engine;
@@ -264,7 +305,19 @@ export class NakisRenderer extends ShooterRenderer {
         const c = state.grid[y][x];
         if (!c) continue;
         const done = (state.painted[y][x] && !this.arriving.has(y * state.W + x)) || reveal;
-        ctx.drawImage(done ? this.cubeCache[c] : this.hintCache[c], x0 + x * cube, y0 + y * cube, cube, cube);
+        const px = x0 + x * cube;
+        const py = y0 + y * cube;
+        ctx.drawImage(done ? this.cubeCache[c] : this.hintCache[c], px, py, cube, cube);
+        if (done) continue;
+        // Çift ilmek: ilk ilmekten sonra tek çapraz tel; henüz başlanmadıysa ×2 rozeti
+        if (state.need?.[y][x] > 1) {
+          if (state.done[y][x] >= 1) {
+            strand(ctx, px + cube * 0.16, py + cube * 0.16, px + cube * 0.84, py + cube * 0.84, cube * 0.34, PALETTE[c]);
+          } else {
+            ctx.drawImage(this._nakisOverlay('double'), px, py, cube, cube);
+          }
+        }
+        if (state.locked?.[y][x]) ctx.drawImage(this._nakisOverlay('knot'), px, py, cube, cube);
       }
     }
     if (reveal) {

@@ -41,6 +41,7 @@ export class Renderer {
     this.particles = [];
     this.texts = [];
     this.tweens = [];
+    this.ice = new Set(); // buzlu hücre indeksleri (oyun kontrolcüsü verir)
     this.selected = -1;
     this.storm = false;
     this.lowEffects = false;
@@ -225,6 +226,59 @@ export class Renderer {
     await Promise.all(this.grid.map((s) => this.tween(s, { scale: 1 }, 260, easing.outCubic)));
   }
 
+  /** Buz kırılınca parlak buz kıymıkları saçılır */
+  crackIce(index) {
+    const x = (index % this.size) + 0.5;
+    const y = Math.floor(index / this.size) + 0.5;
+    for (let k = 0; k < 9; k++) {
+      const a = (Math.PI * 2 * k) / 9 + Math.random() * 0.5;
+      const v = 2 + Math.random() * 2.5;
+      this.particles.push({
+        x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5,
+        life: 1, size: 0.07 + Math.random() * 0.07, color: k % 2 ? '#FFFFFF' : '#9BEFF5',
+      });
+    }
+  }
+
+  _iceImage() {
+    const px = Math.ceil(this.cell * this.dpr);
+    if (this._ice?.width === px) return this._ice;
+    const c = document.createElement('canvas');
+    c.width = px;
+    c.height = px;
+    const g = c.getContext('2d');
+    const o = px * 0.04;
+    const s = px - o * 2;
+    const grad = g.createLinearGradient(0, 0, px, px);
+    grad.addColorStop(0, 'rgba(230, 250, 255, 0.72)');
+    grad.addColorStop(0.5, 'rgba(155, 239, 245, 0.45)');
+    grad.addColorStop(1, 'rgba(76, 141, 220, 0.55)');
+    roundRect(g, o, o, s, s, s * 0.2);
+    g.fillStyle = grad;
+    g.fill();
+    g.lineWidth = Math.max(1.5, px * 0.05);
+    g.strokeStyle = 'rgba(255,255,255,0.9)';
+    g.stroke();
+    // parlama ve çatlak çizgileri
+    g.strokeStyle = 'rgba(255,255,255,0.85)';
+    g.lineWidth = Math.max(1, px * 0.035);
+    g.beginPath();
+    g.moveTo(px * 0.2, px * 0.35);
+    g.lineTo(px * 0.35, px * 0.2);
+    g.moveTo(px * 0.2, px * 0.55);
+    g.lineTo(px * 0.55, px * 0.2);
+    g.stroke();
+    g.strokeStyle = 'rgba(30, 136, 184, 0.45)';
+    g.lineWidth = Math.max(1, px * 0.02);
+    g.beginPath();
+    g.moveTo(px * 0.62, px * 0.9);
+    g.lineTo(px * 0.7, px * 0.7);
+    g.lineTo(px * 0.85, px * 0.62);
+    g.stroke();
+    this._ice = c;
+    return c;
+  }
+
   _burst(s) {
     const count = this.lowEffects ? 3 : 8;
     const color = JELLY_COLORS[s.color];
@@ -339,6 +393,14 @@ export class Renderer {
     for (const s of this.dying) drawSprite(s, false);
     if (this.selected >= 0 && this.grid[this.selected]) drawSprite(this.grid[this.selected], true);
     ctx.restore();
+
+    // Buz tabakası: şekerin üstünde yarı saydam, parlak buz
+    if (this.ice.size) {
+      const img = this._iceImage();
+      for (const i of this.ice) {
+        ctx.drawImage(img, pad + (i % size) * cell, pad + Math.floor(i / size) * cell, cell, cell);
+      }
+    }
 
     // Parçacıklar
     for (const p of this.particles) {

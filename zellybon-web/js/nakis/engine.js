@@ -16,6 +16,9 @@
 //
 // En içteki (dışarıya en uzak) boyanmamış hücre işlenince hiçbir hücrenin bağlantısı kopmaz; bu yüzden
 // doğru rengi veren oyuncu her zaman ilerleyebilir.
+// - Engeller (bölümün isteğe bağlı `mods` katmanı; tabloyla aynı boyutta, '.' = engel yok):
+//   'a' Çift ilmek: hücre iki kez işlenmeli (iki ip harcar); ilk ilmekten sonra hâlâ yol verir.
+//   'l' Düğüm: yanındaki (4 komşu) hücrelerden biri tamamen işlenene kadar işlenemez.
 
 import { createRng } from '../game/rng.js';
 import { parseArt, laneInfo } from '../shooter/engine.js';
@@ -71,11 +74,12 @@ export function buildSpoolColumns(level, seed = level.seed ?? `nakis-${level.id}
   const rng = createRng(seed);
   const grid = parseArt(level.art);
   const depth = computeDepth(grid);
+  const { need } = parseNakisMods(level);
   const byColor = new Map();
   grid.forEach((row, y) => row.forEach((c, x) => {
     if (!c) return;
     if (!byColor.has(c)) byColor.set(c, []);
-    byColor.get(c).push(depth[y][x]);
+    for (let k = 0; k < need[y][x]; k++) byColor.get(c).push(depth[y][x]);
   }));
 
   const spools = [];
@@ -91,6 +95,15 @@ export function buildSpoolColumns(level, seed = level.seed ?? `nakis-${level.id}
   return columns;
 }
 
+/** Engel katmanı: need[y][x] (çift ilmek = 2, normal = 1, boş = 0) ve locked[y][x] */
+export function parseNakisMods(level) {
+  const grid = parseArt(level.art);
+  const rows = level.mods ?? [];
+  const need = grid.map((row, y) => row.map((c, x) => (!c ? 0 : rows[y]?.[x] === 'a' ? 2 : 1)));
+  const locked = grid.map((row, y) => row.map((c, x) => Boolean(c) && rows[y]?.[x] === 'l'));
+  return { need, locked };
+}
+
 let nextId = 1;
 
 export function createNakisEngine(level, { seed } = {}) {
@@ -101,13 +114,18 @@ export function createNakisEngine(level, { seed } = {}) {
   const depth = computeDepth(grid);
   const painted = grid.map((row) => row.map(() => false));
   const totalCubes = grid.flat().filter(Boolean).length;
-  const left = {}; // renk → işlenmemiş hücre sayısı
-  grid.flat().forEach((c) => c && (left[c] = (left[c] ?? 0) + 1));
+  const { need, locked } = parseNakisMods(level);
+  const done = grid.map((row) => row.map(() => 0)); // hücreye atılan ilmek sayısı
+  const left = {}; // renk → kalan ilmek sayısı
+  grid.forEach((row, y) => row.forEach((c, x) => c && (left[c] = (left[c] ?? 0) + need[y][x])));
 
   const state = {
     level,
     grid,
     painted,
+    need,
+    done,
+    locked,
     depth,
     W,
     H,
@@ -172,6 +190,29 @@ export function createNakisEngine(level, { seed } = {}) {
     return ok;
   }
 
+  // Hücreye bir ilmek atılabilir mi? (kilitsiz ve, hücreyi tamamlıyorsa, kimsenin yolunu kesmiyor)
+  const stitchable = (x, y) => !locked[y][x] && (done[y][x] + 1 < need[y][x] || safeToPaint(x, y));
+
+  // Bir ilmek atar; hücre tamamlanırsa işlenmiş sayılır ve komşu düğümler çözülür
+  function applyStitch(x, y, color, events, extra) {
+    done[y][x]++;
+    left[color]--;
+    const complete = done[y][x] >= need[y][x];
+    if (complete) {
+      painted[y][x] = true;
+      state.cubesLeft--;
+    }
+    events.push({ type: 'hit', cube: { x, y }, color, partial: !complete, ...extra });
+    if (!complete) return;
+    for (const [dx, dy] of DIRS) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || !locked[ny][nx]) continue;
+      locked[ny][nx] = false;
+      events.push({ type: 'unlock', cube: { x: nx, y: ny } });
+    }
+  }
+
   // Giriş hücresinden açık hücreler üzerinden BFS: ulaşılan hücreler ve yol için ebeveynler
   function explore(start) {
     const parent = new Map();
@@ -213,7 +254,7 @@ export function createNakisEngine(level, { seed } = {}) {
       .filter(({ x, y }) => grid[y][x] === color && !painted[y][x] && depth[y][x] >= minDepth)
       .sort((a, b) => depth[b.y][b.x] - depth[a.y][a.x] || a.i - b.i);
     for (const c of candidates) {
-      if (safeToPaint(c.x, c.y)) return { cell: { x: c.x, y: c.y }, path: pathTo(parent, c) };
+      if (stitchable(c.x, c.y)) return { cell: { x: c.x, y: c.y }, path: pathTo(parent, c) };
     }
     return null;
   }
@@ -227,7 +268,7 @@ export function createNakisEngine(level, { seed } = {}) {
     const minDepth = minPaintableDepth();
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        if (grid[y][x] === color && !painted[y][x] && depth[y][x] >= minDepth && safeToPaint(x, y)) return true;
+        if (grid[y][x] === color && !painted[y][x] && depth[y][x] >= minDepth && stitchable(x, y)) return true;
       }
     }
     return false;
@@ -299,12 +340,8 @@ export function createNakisEngine(level, { seed } = {}) {
         sp.lastLane = p;
         const found = findStitch(sp.color, p);
         if (!found) continue;
-        const { x, y } = found.cell;
-        painted[y][x] = true;
-        state.cubesLeft--;
-        left[sp.color]--;
         sp.ammo--;
-        events.push({ type: 'hit', shooter: sp, lane: p, cube: found.cell, color: sp.color, path: found.path });
+        applyStitch(found.cell.x, found.cell.y, sp.color, events, { shooter: sp, lane: p, path: found.path });
       }
       if (!state.belt.includes(sp)) continue;
       if (!left[sp.color]) {
@@ -369,24 +406,20 @@ export function createNakisEngine(level, { seed } = {}) {
         for (let x = 0; x < W; x++) {
           if (!grid[y][x] || painted[y][x]) continue;
           if (best && depth[y][x] <= best.d) continue;
-          if (safeToPaint(x, y)) best = { color: grid[y][x], d: depth[y][x] };
+          if (stitchable(x, y)) best = { color: grid[y][x], d: depth[y][x] };
         }
       }
       if (!best) break;
       // Bu renk için hücreye ulaşan bir şerit bul
-      let done = false;
-      for (let p = 0; p < L && !done; p++) {
+      let stitched = false;
+      for (let p = 0; p < L && !stitched; p++) {
         const found = findStitch(best.color, p);
         if (!found) continue;
-        const { x, y } = found.cell;
-        painted[y][x] = true;
-        state.cubesLeft--;
-        left[best.color]--;
-        events.push({ type: 'hit', shooter: null, lane: p, cube: found.cell, color: best.color, path: found.path });
+        applyStitch(found.cell.x, found.cell.y, best.color, events, { shooter: null, lane: p, path: found.path });
         if (!left[best.color]) retireColor(best.color, events);
-        done = true;
+        stitched = true;
       }
-      if (!done) break;
+      if (!stitched) break;
     }
     return events;
   }

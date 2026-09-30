@@ -4,30 +4,36 @@ import { NAKIS_LEVELS } from '../js/nakis/levels.js';
 import { createNakisEngine, buildSpoolColumns, computeDepth } from '../js/nakis/engine.js';
 import { parseArt } from '../js/shooter/engine.js';
 import { PALETTE } from '../js/palette.js';
+import { playSmartNakis as autoplayNakis } from '../js/nakis/bot.js';
 
-// Makul bir oyuncu: yolda yer varsa şu an işleyebilecek bir makarayı gönderir (önce kutudakiler).
-export function autoplayNakis(level, { maxMs = 15 * 60 * 1000 } = {}) {
+test('Nakış: çift ilmek iki ip ister, ilk ilmekten sonra hücre hâlâ açık', () => {
+  const level = { id: 89, art: ['bbb', 'byb', 'bbb'], mods: ['...', '.a.', '...'], spool: 20, slots: 2, columns: 1, belt: 3, shuffle: 0, slack: 0 };
+  const total = buildSpoolColumns(level).flat().filter((s) => s.color === 'y').length * level.spool;
+  assert.ok(total >= 2);
   const e = createNakisEngine(level);
-  const { state } = e;
-  let t = 0;
-  while (state.status === 'playing' && t < maxMs) {
-    if (e.canLaunch()) {
-      const slot = state.slots.findIndex((s) => s && e.canStitchColor(s.color));
-      const col = state.columns.findIndex((c) => c[0] && e.canStitchColor(c[0].color));
-      if (slot >= 0) e.launchFromSlot(slot);
-      else if (col >= 0) e.launchFromColumn(col);
-      else if (!state.belt.length && !state.pending.length && state.slots.includes(null)) {
-        let pick = state.columns.findIndex((c) => c[1] && e.canStitchColor(c[1].color));
-        if (pick < 0) pick = state.columns.findIndex((c) => c.length);
-        if (pick >= 0) e.launchFromColumn(pick);
-      }
-    }
-    e.step(50);
-    t += 50;
-  }
-  return state;
-}
+  assert.equal(e.state.left.y, 2);
+  e.state.columns = [[{ id: 1, color: 'y', ammo: 5 }]];
+  e.launchFromColumn(0);
+  const ev = [];
+  for (let i = 0; i < 40 && e.state.left.y > 0; i++) ev.push(...e.step(50));
+  const hits = ev.filter((x) => x.type === 'hit');
+  assert.equal(hits[0].partial, true, 'ilk ilmek yarım');
+  assert.equal(hits[1].partial, false, 'ikinci ilmek tamamlar');
+  assert.equal(e.state.painted[1][1], true);
+});
 
+test('Nakış: düğümlü hücre komşusu işlenene kadar işlenemez', () => {
+  const level = { id: 88, art: ['bbbb', 'byyb', 'bbbb'], mods: ['....', '.l..', '....'], spool: 20, slots: 2, columns: 1, belt: 3, shuffle: 0, slack: 0 };
+  const e = createNakisEngine(level);
+  e.state.columns = [[{ id: 1, color: 'y', ammo: 5 }]];
+  e.launchFromColumn(0);
+  const ev = [];
+  for (let i = 0; i < 60 && e.state.left.y > 0; i++) ev.push(...e.step(50));
+  const hits = ev.filter((x) => x.type === 'hit').map((x) => `${x.cube.x},${x.cube.y}`);
+  assert.equal(hits[0], '2,1', 'önce düğümsüz sarı');
+  assert.ok(ev.some((x) => x.type === 'unlock'));
+  assert.equal(hits[1], '1,1', 'sonra çözülen düğüm');
+});
 test('Nakış: tablolar dikdörtgen ve sadece paletteki renkleri kullanıyor', () => {
   for (const level of NAKIS_LEVELS) {
     assert.equal(new Set(level.art.map((r) => r.length)).size, 1, `bölüm ${level.id}`);

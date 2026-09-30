@@ -5,6 +5,8 @@
 // goals:
 //   { type: 'score', value }          hamleler bitince skor en az value olmalı
 //   { type: 'collect', color, count } o renkten count jöle patlat (hepsi toplanınca bölüm hemen biter)
+//   { type: 'ice' }                   tahtadaki bütün buzları kır (buzlu hücrede eşleşme/patlama olunca kırılır)
+// ice: isteğe bağlı 8 satırlık buz katmanı ('x' = buzlu hücre, '.' = buzsuz)
 // stars: [2 yıldız, 3 yıldız] puan eşikleri (bölümü geçmek 1 yıldız)
 
 export const MOVE_BONUS = 60; // toplama bölümünde artan her hamle için bonus puan
@@ -54,18 +56,28 @@ export const LEVELS = [
 
 export const getLevel = (id) => LEVELS.find((l) => l.id === id) ?? null;
 
-export const isCollectLevel = (level) => level.goals.every((g) => g.type === 'collect');
+// Toplama ve buz hedefleri tamamlanınca bölüm hamleler bitmeden biter
+export const isCollectLevel = (level) => level.goals.every((g) => g.type === 'collect' || g.type === 'ice');
+
+/** Buz katmanındaki buzlu hücrelerin indeksleri (8x8 tahta) */
+export function iceCells(level, size = 8) {
+  const out = [];
+  (level.ice ?? []).forEach((row, y) => [...row].forEach((ch, x) => ch === 'x' && out.push(y * size + x)));
+  return out;
+}
 
 /** Bir bölüm açık mı? 1. bölüm her zaman açık; diğerleri öncekinden en az 1 yıldızla açılır. */
 export function isUnlocked(progress, id) {
   return id === 1 || (progress?.[id - 1]?.stars ?? 0) >= 1;
 }
 
-/** Hedeflerin karşılanıp karşılanmadığı. collected: renk → patlatılan sayı */
-export function goalsMet(level, score, collected) {
-  return level.goals.every((g) =>
-    g.type === 'score' ? score >= g.value : (collected[g.color] ?? 0) >= g.count,
-  );
+/** Hedeflerin karşılanıp karşılanmadığı. collected: renk → patlatılan sayı, iceLeft: kalan buz */
+export function goalsMet(level, score, collected, iceLeft = 0) {
+  return level.goals.every((g) => {
+    if (g.type === 'score') return score >= g.value;
+    if (g.type === 'ice') return iceLeft === 0;
+    return (collected[g.color] ?? 0) >= g.count;
+  });
 }
 
 export function starsFor(level, score, won) {

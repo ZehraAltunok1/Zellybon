@@ -162,6 +162,10 @@ export class ShooterRenderer {
       } else if (ev.type === 'hit') {
         const from = this.trackPoint(ev.shooter.traveled);
         this.dying.push({ ...ev.cube, color: ev.color, t0: this.time, from });
+      } else if (ev.type === 'armor' || ev.type === 'unlock') {
+        // zırh düştü / kilit açıldı: metal kıvılcımları
+        const c = this.cubeCenter(ev.cube.x, ev.cube.y);
+        this._burst(c.x, c.y, ev.type === 'armor' ? 'w' : 'y', 7);
       } else if (ev.type === 'empty') {
         const p = this.trackPoint(ev.shooter.traveled);
         this.popping.push({ ...p, color: ev.shooter.color, t0: this.time });
@@ -304,6 +308,62 @@ export class ShooterRenderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
+  /** Engel çizimleri (küp boyutunda, önbellekte): 'armor' gümüş perçinli çerçeve, 'lock' asma kilit */
+  _overlay(kind) {
+    this.overlayCache ??= {};
+    const key = `${kind}-${this.L.cube}`;
+    if (this.overlayCache[key]) return this.overlayCache[key];
+    const s = Math.max(6, Math.ceil(this.L.cube * this.dpr));
+    const c = document.createElement('canvas');
+    c.width = s;
+    c.height = s;
+    const g = c.getContext('2d');
+    if (kind === 'armor') {
+      const grad = g.createLinearGradient(0, 0, s, s);
+      grad.addColorStop(0, '#FFFFFF');
+      grad.addColorStop(0.4, '#B8C4D2');
+      grad.addColorStop(1, '#5C6B7A');
+      g.lineWidth = s * 0.16;
+      g.strokeStyle = grad;
+      roundRect(g, s * 0.1, s * 0.08, s * 0.8, s * 0.72, s * 0.14);
+      g.stroke();
+      g.fillStyle = '#E3E9F0';
+      for (const [px, py] of [[0.18, 0.16], [0.82, 0.16], [0.18, 0.74], [0.82, 0.74]]) {
+        g.beginPath();
+        g.arc(px * s, py * s, s * 0.06, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.strokeStyle = 'rgba(255,255,255,0.7)';
+      g.lineWidth = s * 0.05;
+      g.beginPath();
+      g.moveTo(s * 0.3, s * 0.3);
+      g.lineTo(s * 0.5, s * 0.5);
+      g.stroke();
+    } else {
+      // asma kilit
+      g.lineWidth = s * 0.1;
+      g.strokeStyle = '#A78828';
+      g.beginPath();
+      g.arc(s * 0.5, s * 0.42, s * 0.16, Math.PI, 0);
+      g.stroke();
+      const body = g.createLinearGradient(0, s * 0.42, 0, s * 0.8);
+      body.addColorStop(0, '#FFF0A0');
+      body.addColorStop(1, '#D9A600');
+      g.fillStyle = body;
+      roundRect(g, s * 0.26, s * 0.42, s * 0.48, s * 0.36, s * 0.08);
+      g.fill();
+      g.strokeStyle = '#8A6A00';
+      g.lineWidth = s * 0.04;
+      g.stroke();
+      g.fillStyle = '#22364A';
+      g.beginPath();
+      g.arc(s * 0.5, s * 0.57, s * 0.05, 0, Math.PI * 2);
+      g.fill();
+    }
+    this.overlayCache[key] = c;
+    return c;
+  }
+
   // Resim: kalan küpler; kazanınca resmin tamamı parlayarak geri gelir
   _drawBoard() {
     const { ctx } = this;
@@ -315,7 +375,11 @@ export class ShooterRenderer {
     for (let y = 0; y < state.H; y++) {
       for (let x = 0; x < state.W; x++) {
         const c = state.grid[y][x];
-        if (c) ctx.drawImage(this.cubeCache[c], x0 + x * cube, y0 + y * cube, cube, cube);
+        if (!c) continue;
+        ctx.drawImage(this.cubeCache[c], x0 + x * cube, y0 + y * cube, cube, cube);
+        // Engeller: zırh çerçevesi ve kilit
+        if (state.hp?.[y][x] > 1) ctx.drawImage(this._overlay('armor'), x0 + x * cube, y0 + y * cube, cube, cube);
+        if (state.locked?.[y][x]) ctx.drawImage(this._overlay('lock'), x0 + x * cube, y0 + y * cube, cube, cube);
       }
     }
     if (revealAlpha > 0) {

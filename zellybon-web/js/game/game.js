@@ -8,7 +8,7 @@ import {
 import { createScoring } from './scoring.js';
 import { Renderer, JELLY_COLORS } from './renderer.js';
 import { attachInput } from './input.js';
-import { goalsMet, starsFor, isCollectLevel, MOVE_BONUS } from './levels.js';
+import { goalsMet, starsFor, isCollectLevel, iceCells, MOVE_BONUS } from './levels.js';
 import {
   JOKERS, getJoker, HOURGLASS_SECONDS, HOURGLASS_MOVES, HOURGLASS_MAX_PER_QUICK_ROUND,
 } from './jokers.js';
@@ -60,10 +60,13 @@ export class Game {
     this.hourglassUsed = 0;
     this.movesLeft = this.level?.moves ?? 0;
     this.collected = {};
+    this.ice = new Set(this.level ? iceCells(this.level) : []); // buzlu hücreler
+    this.iceTotal = this.ice.size;
     this._shownScore = 0;
 
     this.renderer.resize();
     this.renderer.setBoard(this.board);
+    this.renderer.ice = this.ice;
     this.renderer.start((dt) => this._tick(dt));
     window.addEventListener('resize', this._onResize);
     this._detachInput = attachInput(this.canvas, this.renderer, {
@@ -126,7 +129,11 @@ export class Game {
 
   _goalText() {
     return this.level.goals
-      .map((g) => (g.type === 'score' ? `${g.value.toLocaleString('tr-TR')} puan yap` : `${g.count} jöle topla`))
+      .map((g) => {
+        if (g.type === 'score') return `${g.value.toLocaleString('tr-TR')} puan yap`;
+        if (g.type === 'ice') return 'bütün buzları kır';
+        return `${g.count} jöle topla`;
+      })
       .join(' · ')
       .replace(/^/, 'Hedef: ');
   }
@@ -142,6 +149,10 @@ export class Game {
         const done = this.scoring.score >= g.value;
         chip.classList.toggle('done', done);
         chip.textContent = `🎯 ${Math.min(this.scoring.score, g.value).toLocaleString('tr-TR')} / ${g.value.toLocaleString('tr-TR')}`;
+      } else if (g.type === 'ice') {
+        const broken = this.iceTotal - this.ice.size;
+        chip.classList.toggle('done', this.ice.size === 0);
+        chip.textContent = `🧊 ${broken} / ${this.iceTotal}`;
       } else {
         const have = Math.min(this.collected[g.color] ?? 0, g.count);
         chip.classList.toggle('done', have >= g.count);
@@ -325,7 +336,11 @@ export class Game {
   async _playSteps(steps) {
     for (const step of steps) {
       const result = this.scoring.scoreStep(step, this.clock);
-      for (const c of step.cleared) this.collected[c.color] = (this.collected[c.color] ?? 0) + 1;
+      for (const c of step.cleared) {
+        this.collected[c.color] = (this.collected[c.color] ?? 0) + 1;
+        // Buzlu hücrede patlama olunca buz kırılır
+        if (this.ice.delete(c.index)) this.renderer.crackIce(c.index);
+      }
       this._renderGoals();
       await this.renderer.playStep(step, result);
       if (this.ended) return;
@@ -347,7 +362,7 @@ export class Game {
       if (this.timeUp) this._finish();
       return;
     }
-    const met = goalsMet(this.level, this.scoring.score, this.collected);
+    const met = goalsMet(this.level, this.scoring.score, this.collected, this.ice.size);
     if (met && isCollectLevel(this.level)) this._finish(true);
     else if (this.movesLeft <= 0) this._finish(met);
   }

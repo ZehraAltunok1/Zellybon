@@ -11,6 +11,9 @@
 //   Zıplayan (bounce): şeritte 2 küp vurur. Roket (fast): yolda daha hızlı gider.
 //   Delici (pierce): şeritte art arda gelen aynı renk küplerin hepsini vurur.
 //   Bomba (bomb): vurduğu küpün 4 komşusundaki aynı renk küpleri de vurur (içerideki küplere ulaşır).
+// - Engeller (bölümün isteğe bağlı `mods` katmanı; resimle aynı boyutta, '.' = engel yok):
+//   'a' Zırhlı küp: iki vuruşta kırılır (ilk vuruş zırhı düşürür). Mermi hesabında 2 sayılır.
+//   'l' Kilitli küp: yanındaki (4 komşu) herhangi bir küp patlayana kadar vurulamaz; şeridi kapatır.
 
 import { createRng } from '../game/rng.js';
 
@@ -52,12 +55,21 @@ export function firstCubeInLane(grid, p) {
   return null;
 }
 
-/** Bu renkte şu an vurulabilecek (açıkta) bir küp var mı? */
-export function colorExposed(grid, color) {
+/** Engel katmanı: hp[y][x] (zırhlı = 2, normal = 1, boş = 0) ve locked[y][x] */
+export function parseMods(level) {
+  const grid = parseArt(level.art);
+  const rows = level.mods ?? [];
+  const hp = grid.map((row, y) => row.map((c, x) => (!c ? 0 : rows[y]?.[x] === 'a' ? 2 : 1)));
+  const locked = grid.map((row, y) => row.map((c, x) => Boolean(c) && rows[y]?.[x] === 'l'));
+  return { hp, locked };
+}
+
+/** Bu renkte şu an vurulabilecek (açıkta ve kilitsiz) bir küp var mı? */
+export function colorExposed(grid, color, locked = null) {
   const L = 2 * (grid.length + grid[0].length);
   for (let p = 0; p < L; p++) {
     const c = firstCubeInLane(grid, p);
-    if (c && grid[c.y][c.x] === color) return true;
+    if (c && grid[c.y][c.x] === color && !locked?.[c.y][c.x]) return true;
   }
   return false;
 }
@@ -94,12 +106,14 @@ export function buildColumns(level, seed = `main-${level.id}`) {
   const rng = createRng(seed);
   const grid = parseArt(level.art);
   const layer = peelLayers(grid);
+  const { hp } = parseMods(level);
 
+  // Her vuruş için bir mermi: zırhlı küpler iki kez sayılır
   const byColor = new Map();
   grid.forEach((row, y) => row.forEach((c, x) => {
     if (!c) return;
     if (!byColor.has(c)) byColor.set(c, []);
-    byColor.get(c).push(layer[y][x]);
+    for (let k = 0; k < hp[y][x]; k++) byColor.get(c).push(layer[y][x]);
   }));
 
   const shooters = [];
@@ -139,10 +153,13 @@ export function createEngine(level, { seed, boosters = {} } = {}) {
   const W = grid[0].length;
   const L = 2 * (W + H);
   const totalCubes = grid.flat().filter(Boolean).length;
+  const { hp, locked } = parseMods(level);
 
   const state = {
     level,
     grid,
+    hp,
+    locked,
     W,
     H,
     L,
@@ -188,18 +205,36 @@ export function createEngine(level, { seed, boosters = {} } = {}) {
     if (state.belt.length || state.pending.length) return false;
     if (state.slots.some((s) => !s)) return false;
     const candidates = [...state.slots, ...state.columns.map((col) => col[0]).filter(Boolean)];
-    return !candidates.some((s) => colorExposed(state.grid, s.color));
+    return !candidates.some((s) => colorExposed(state.grid, s.color, state.locked));
   }
+
+  /** Bu renkteki bir jöle şu an bir şey vurabilir mi? (botlar ve ipuçları için) */
+  const canHit = (color) => colorExposed(state.grid, color, state.locked);
 
   function hit(sh, cube, lane, events, via = null) {
-    state.grid[cube.y][cube.x] = null;
-    state.cubesLeft--;
     state.shots++;
     sh.ammo--;
+    if (state.hp[cube.y][cube.x] > 1) {
+      // Zırh düşer, küp yerinde kalır
+      state.hp[cube.y][cube.x]--;
+      events.push({ type: 'armor', shooter: sh, lane, cube, color: sh.color, via });
+      return;
+    }
+    state.hp[cube.y][cube.x] = 0;
+    state.grid[cube.y][cube.x] = null;
+    state.cubesLeft--;
     events.push({ type: 'hit', shooter: sh, lane, cube, color: sh.color, via });
+    // Yanındaki kilitli küplerin kilidi açılır
+    for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+      const nx = cube.x + dx;
+      const ny = cube.y + dy;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || !state.locked[ny][nx]) continue;
+      state.locked[ny][nx] = false;
+      events.push({ type: 'unlock', cube: { x: nx, y: ny } });
+    }
   }
 
-  const matches = (cube, color) => cube && state.grid[cube.y][cube.x] === color;
+  const matches = (cube, color) => cube && state.grid[cube.y][cube.x] === color && !state.locked[cube.y][cube.x];
 
   // Bir şeritten geçerken ateş: ilk küp jölenin rengindeyse vurur, sonra karakter yeteneği devreye girer
   function fireLane(sh, p, events) {
@@ -277,5 +312,5 @@ export function createEngine(level, { seed, boosters = {} } = {}) {
     return events;
   }
 
-  return { state, step, launchFromColumn, launchFromSlot, canLaunch, beltCount };
+  return { state, step, launchFromColumn, launchFromSlot, canLaunch, beltCount, canHit };
 }

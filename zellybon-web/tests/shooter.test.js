@@ -2,52 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { MAIN_LEVELS, CUBE_COLORS } from '../js/shooter/levels.js';
 import {
-  parseArt, buildColumns, createEngine, firstCubeInLane, laneInfo, colorExposed,
+  parseArt, buildColumns, createEngine, firstCubeInLane, laneInfo,
 } from '../js/shooter/engine.js';
-
-// Bu renkten şu an kaç şeritte vurulabilir küp var?
-function exposedCount(grid, color) {
-  const L = 2 * (grid.length + grid[0].length);
-  let n = 0;
-  for (let p = 0; p < L; p++) {
-    const c = firstCubeInLane(grid, p);
-    if (c && grid[c.y][c.x] === color) n++;
-  }
-  return n;
-}
-
-// Makul bir oyuncu: yolda yer varsa önce kutudaki, sonra sütundaki jölelerden en çok küp
-// vurabilecek olanı gönderir. Kimse vuramıyorsa arkasındaki jölesi işe yarayacak sütunu ilerletir.
-export function autoplay(level, { maxMs = 10 * 60 * 1000 } = {}) {
-  const e = createEngine(level);
-  const { state } = e;
-  let t = 0;
-  while (state.status === 'playing' && t < maxMs) {
-    if (e.canLaunch()) {
-      let best = null;
-      state.slots.forEach((s, i) => {
-        if (!s) return;
-        const n = exposedCount(state.grid, s.color);
-        if (n > 0 && (!best || n + 1000 > best.score)) best = { score: n + 1000, slot: i };
-      });
-      state.columns.forEach((c, i) => {
-        if (!c[0]) return;
-        const n = exposedCount(state.grid, c[0].color);
-        if (n > 0 && (!best || n > best.score)) best = { score: n, col: i };
-      });
-      if (best?.slot !== undefined) e.launchFromSlot(best.slot);
-      else if (best) e.launchFromColumn(best.col);
-      else if (!state.belt.length && !state.pending.length && state.slots.includes(null)) {
-        let pick = state.columns.findIndex((c) => c[1] && colorExposed(state.grid, c[1].color));
-        if (pick < 0) pick = state.columns.findIndex((c) => c.length);
-        if (pick >= 0) e.launchFromColumn(pick);
-      }
-    }
-    e.step(50);
-    t += 50;
-  }
-  return state;
-}
+import { playSmart as autoplay } from '../js/shooter/bot.js';
 
 test('tüm resimler dikdörtgen ve sadece tanımlı renkleri kullanıyor', () => {
   for (const level of MAIN_LEVELS) {
@@ -191,6 +148,34 @@ test('karakterler bölümün izin verdiği yeteneklerden seçilir', () => {
     for (const a of abilities) assert.ok(level.abilities.includes(a), `bölüm ${level.id}: ${a}`);
     if (level.intro) assert.ok(abilities.includes(level.intro), `bölüm ${level.id} tanıttığı karakteri içermeli`);
   }
+});
+
+test('zırhlı küp iki vuruşta kırılır ve mermi hesabında iki sayılır', () => {
+  const level = { id: 95, art: ['rr'], mods: ['a.'], slots: 2, columns: 1, belt: 3, ammo: [10], shuffle: 0 };
+  const ammo = buildColumns(level).flat().reduce((n, s) => n + s.ammo, 0);
+  assert.equal(ammo, 3);
+  const e = createEngine(level);
+  e.state.columns = [[{ id: 1, color: 'r', ammo: 1 }]];
+  e.launchFromColumn(0);
+  const ev = [];
+  for (let i = 0; i < 10; i++) ev.push(...e.step(50));
+  // alt şerit 0 (sütun 0): zırhlı küp; ilk vuruş zırhı düşürür, küp kalır
+  assert.ok(ev.some((x) => x.type === 'armor'));
+  assert.equal(e.state.grid[0][0], 'r');
+  assert.equal(e.state.hp[0][0], 1);
+});
+
+test('kilitli küp komşusu patlayana kadar vurulamaz, sonra kilidi açılır', () => {
+  const level = { id: 94, art: ['rb'], mods: ['l.'], slots: 2, columns: 1, belt: 3, ammo: [10], shuffle: 0 };
+  const e = createEngine(level);
+  assert.equal(e.canHit('r'), false, 'kilitli kırmızı vurulamaz');
+  assert.equal(e.canHit('b'), true);
+  e.state.columns = [[{ id: 1, color: 'b', ammo: 1 }]];
+  e.launchFromColumn(0);
+  const ev = [];
+  for (let i = 0; i < 20; i++) ev.push(...e.step(50));
+  assert.ok(ev.some((x) => x.type === 'unlock'));
+  assert.equal(e.canHit('r'), true);
 });
 
 test('her bölüm kazanılabilir (otomatik oyuncu tüm resimleri temizliyor)', () => {
