@@ -138,19 +138,51 @@
 .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
 .shop-card {
+  --from: #6D8FB3;
+  --to: #3A5F84;
+  --edge: #24405E;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 14px 10px 12px;
+  padding: 12px 10px 12px;
   border-radius: 20px;
-  background: var(--card);
-  border: 1px solid var(--card-border);
+  background: linear-gradient(170deg, var(--from), var(--to));
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 0 var(--edge), 0 10px 20px rgba(12, 30, 48, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.45);
   text-align: center;
+  overflow: hidden;
 }
 
-.shop-icon { font-size: 2.2rem; line-height: 1.1; }
-.shop-card small { opacity: 0.85; }
+/* her grup kendi dolu rengiyle */
+.shop-lives .shop-card { --from: #FF8A8A; --to: #C9303A; --edge: #7E1A22; }
+.shop-main .shop-card { --from: #FFB26B; --to: #D8641A; --edge: #803A0C; }
+.shop-nakis .shop-card { --from: #5FD6E0; --to: #1E7FA8; --edge: #0F4A66; }
+.shop-match .shop-card { --from: #B77BF0; --to: #5E2E91; --edge: #3E1C66; }
+
+.shop-card strong { font-size: 1.05rem; line-height: 1.1; text-shadow: 0 2px 0 rgba(12, 30, 48, 0.3); }
+.shop-icon { filter: drop-shadow(0 4px 4px rgba(12, 30, 48, 0.4)); }
+.shop-card small {
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: rgba(12, 30, 48, 0.35);
+  font-weight: 700;
+}
+
+.shop-amount {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #EFCD43;
+  color: #3A2600;
+  font-weight: 800;
+  border: 2px solid #FFFFFF;
+}
+
+.shop-card .btn-buy:disabled { opacity: 0.75; }
 .btn-buy { margin-top: 6px; width: 100%; min-height: 44px; font-size: 1.05rem; }
 
 /* ---------- Sandık ---------- */

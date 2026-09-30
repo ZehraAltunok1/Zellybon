@@ -6,6 +6,7 @@ import { renderHint, renderStitch, renderSpool, drawNeedle, strand } from '../na
 import { PALETTE, rgba } from '../palette.js';
 import { drawCushion, drawPinHead, drawShaft } from '../pins/renderer.js';
 import { paintWorm } from './arcade.js';
+import { paintChestCanvas } from '../chest.js';
 
 const TAU = Math.PI * 2;
 let raf = 0;
@@ -482,6 +483,9 @@ export function startHomeArt() {
   const canvases = [...document.querySelectorAll('canvas.game-art')];
   const loop = (now) => {
     for (const c of canvases) paint(c, now);
+    document.querySelectorAll('#chest-shelf-row canvas[data-tier]').forEach((c) => {
+      paintChestCanvas(c, c.dataset.tier, 58, { time: now + Number(c.dataset.offset) });
+    });
     raf = requestAnimationFrame(loop);
   };
   raf = requestAnimationFrame(loop);

@@ -33,6 +33,19 @@ export const CHEST_INFO = {
 
 export const CHEST_ORDER = ['bronze', 'silver', 'gold', 'diamond', 'legend'];
 
+/**
+ * Sandık veren bölümler (sunucudaki kuralla aynı: 2, 4, 7, 11, 16, 22, 29 …; aralar büyür, sandık değerlenir).
+ * @returns {{ level: number, tier: string }[]}
+ */
+export function chestMilestones(upTo) {
+  const out = [];
+  for (let level = 2, gap = 2, i = 0; level <= upTo; gap++, i++) {
+    out.push({ level, tier: CHEST_ORDER[Math.min(i, CHEST_ORDER.length - 1)] });
+    level += gap;
+  }
+  return out;
+}
+
 // Sandığın arkasındaki ışık halkası (kademe rengi)
 const AURA = { bronze: '#FFB26B', silver: '#E3F0FF', gold: '#FFE07A', diamond: '#9BEFF5', legend: '#F7A8E8' };
 
@@ -350,7 +363,7 @@ export function drawChest(g, tier, cx, cy, s, { open = 0, time = 0 } = {}) {
 /** Bir canvas'a sandık çizer (dpr'a göre net). Animasyon için tekrar çağrılabilir. */
 export function paintChestCanvas(canvas, tier, cssSize, opts = {}) {
   const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  if (canvas.width !== Math.round(cssSize * dpr)) {
+  if (canvas.width !== Math.round(cssSize * dpr) || canvas.height !== Math.round(cssSize * dpr) || canvas.style.width !== `${cssSize}px`) {
     canvas.width = Math.round(cssSize * dpr);
     canvas.height = Math.round(cssSize * dpr);
     canvas.style.width = `${cssSize}px`;

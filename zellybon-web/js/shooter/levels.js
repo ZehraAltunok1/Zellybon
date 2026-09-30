@@ -14,6 +14,81 @@ export const CUBE_COLORS = Object.fromEntries(Object.entries(PALETTE).map(([k, v
 // Zorluk değerleri, rastgele oynayan bir botun kazanma oranı bölümden bölüme düşecek şekilde
 // simülasyonla ayarlandı (bkz. tests/shooter.test.js — her bölüm akıllı bir oyuncuyla kazanılabilir).
 // 8. ve 10. bölümler bilerek daha kolay: zor bölümlerin arasında "nefes bölümü".
+// Engel katmanı: verilen karakterdeki hücreler (renk harfi) zırhlı ('a') ya da kilitli ('l') olur
+function marks(art, rules) {
+  return art.map((row, y) => [...row].map((ch, x) => rules(ch, x, y) ?? '.').join(''));
+}
+
+const ROKET = [
+  '.....r.....',
+  '....rrr....',
+  '...rwwwr...',
+  '...wwbww...',
+  '...wbbbw...',
+  '...wwbww...',
+  '...wwwww...',
+  '..rwwwwwr..',
+  '.rrwwwwwrr.',
+  'rr.ooooo.rr',
+  '...o.y.o...',
+  '....yyy....',
+];
+
+const DONDURMA = [
+  '...iiiii...',
+  '..iiiiiii..',
+  '.iieiiieii.',
+  '.iiiiiiiii.',
+  '.ccccccccc.',
+  '.cmcccccmc.',
+  '..nnnnnnn..',
+  '..ntntntn..',
+  '...nnnnn...',
+  '...ntntn...',
+  '....nnn....',
+  '.....n.....',
+];
+
+const KAPLUMBAGA = [
+  '....nnnnn....',
+  '...nomomon...',
+  '..nmnnnnnmn..',
+  '.nmnnoooonmn.',
+  '.nnmnnnnnmnn.',
+  'lgnmnnoonnmgl',
+  'l.ggggggggg.l',
+  '..g.g...g.g..',
+  '...........ll',
+];
+
+const FENER = [
+  '....yyy....',
+  '...kkkkk...',
+  '...kyyyk...',
+  '...kkkkk...',
+  '....rrr....',
+  '....www....',
+  '....rrr....',
+  '...wwwww...',
+  '...rrrrr...',
+  '...wwwww...',
+  '..rrrrrrr..',
+  'bbbbbbbbbbb',
+  'bcbbcbbbcbb',
+];
+
+const GOKKUSAGI = [
+  '...rrrrrrr...',
+  '..rooooooor..',
+  '.royyyyyyyor.',
+  'roygggggggyor',
+  'roygbbbbbgyor',
+  'roygb...bgyor',
+  'roygb...bgyor',
+  'wwwww...wwwww',
+  '.www.....www.',
+];
+
 const RAW_LEVELS = [
   {
     id: 1, name: 'Kalp', slots: 5, columns: 2, belt: 4, ammo: [10, 20], shuffle: 0,
@@ -354,6 +429,37 @@ const RAW_LEVELS = [
       'oyoyoyoyoyoyo',
       'ooooooooooooo',
     ],
+  },
+  // ---- 21–25: zırhlı ve kilitli küplerle son bölümler ----
+  {
+    id: 21, name: 'Kaplumbağa', slots: 1, columns: 5, belt: 3, ammo: [5, 5, 10], shuffle: 6,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: KAPLUMBAGA,
+    mods: marks(KAPLUMBAGA, (ch, x, y) => (ch === 'o' ? 'a' : ch === 'm' && y % 2 === 0 ? 'l' : null)),
+  },
+  {
+    id: 22, name: 'Roket', slots: 1, columns: 4, belt: 3, ammo: [5, 10], shuffle: 9,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: ROKET,
+    mods: marks(ROKET, (ch) => (ch === 'b' ? 'a' : ch === 'y' ? 'l' : null)),
+  },
+  {
+    id: 23, name: 'Dondurma', slots: 2, columns: 5, belt: 4, ammo: [5, 10, 20], shuffle: 6,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: DONDURMA,
+    mods: marks(DONDURMA, (ch, x, y) => (ch === 'e' || ch === 'm' ? 'a' : ch === 't' ? 'l' : null)),
+  },
+  {
+    id: 24, name: 'Deniz Feneri', slots: 1, columns: 5, belt: 4, ammo: [5, 10, 20], shuffle: 6,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: FENER,
+    mods: marks(FENER, (ch, x, y) => (ch === 'r' ? 'a' : ch === 'y' && y > 0 ? 'l' : null)),
+  },
+  {
+    id: 25, name: 'Gökkuşağı', slots: 2, columns: 4, belt: 3, ammo: [5, 10, 20], shuffle: 6,
+    abilities: ['bounce', 'fast', 'pierce', 'bomb'], abilityRate: 0.2,
+    art: GOKKUSAGI,
+    mods: marks(GOKKUSAGI, (ch, x, y) => (ch === 'g' || ch === 'o' ? 'a' : ch === 'b' && y > 3 ? 'l' : null)),
   },
 ];
 

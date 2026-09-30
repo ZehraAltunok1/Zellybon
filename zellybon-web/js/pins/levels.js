@@ -5,13 +5,14 @@
 
 import { createRng } from '../game/rng.js';
 
-export const PIN_LEVEL_COUNT = 30;
+export const PIN_LEVEL_COUNT = 35;
 
 const NAMES = [
   'İlk Dikiş', 'Domates', 'Düğme Kutusu', 'Makara', 'Yüksük', 'İlk İp', 'Kanaviçe', 'Fırfır',
   'Ters Dikiş', 'Örgü Şişi', 'Dantel', 'İpek Yol', 'Pıtırcık', 'Kurdele', 'Ponpon', 'Teyel',
   'Zikzak', 'Yama', 'Fermuar', 'Nakış Kasnağı', 'Keçe', 'Yün Yumağı', 'Tığ', 'Terzi Tebeşiri',
   'Gergef', 'Sim', 'Pullu Elbise', 'Kadife', 'Altın Yüksük', 'Usta Terzi',
+  'Boncuklu Kese', 'Gelinlik', 'Sırma', 'İpek Halı', 'Terzi Ustası',
 ];
 
 // İğnedenlik kumaşının rengi (bölümden bölüme değişir)
@@ -33,10 +34,10 @@ export const MOTION_NAMES = {
 
 function buildLevel(id) {
   const rng = createRng(`pins-${id}`);
-  const thread = id >= 6 && id % 3 === 0;
+  const thread = id >= 6 && (id % 3 === 0 || id === 35);
   const motion = id <= 3 ? 'steady' : id <= 5 ? 'reverse' : LATER_MOTIONS[id % LATER_MOTIONS.length];
-  const pre = thread ? Math.min(6, 1 + Math.floor(id / 5)) : Math.min(7, 2 + Math.floor(id / 3));
-  const throws = thread ? Math.min(10, 5 + Math.floor(id / 5)) : Math.min(13, 6 + Math.floor(id / 2.5));
+  const pre = thread ? Math.min(6, 1 + Math.floor(id / 5)) : Math.min(id > 30 ? 8 : 7, 2 + Math.floor(id / 3));
+  const throws = thread ? Math.min(id > 30 ? 11 : 10, 5 + Math.floor(id / 5)) : Math.min(13, 6 + Math.floor(id / 2.5));
   const start = [];
   const offset = rng.next() * Math.PI * 2;
   for (let k = 0; k < pre; k++) {

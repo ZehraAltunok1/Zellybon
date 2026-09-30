@@ -49,6 +49,23 @@ body::after {
     repeating-conic-gradient(from 0deg at 50% -10%, rgba(255, 255, 255, 0.06) 0deg 6deg, transparent 6deg 18deg);
 }
 
+/* Ana sayfa: mor-pembe şeker arka planı */
+body[data-screen="home"] {
+  --bg-from: #D46AC0;
+  --bg-mid: #8A3FB0;
+  --bg-to: #43206E;
+}
+
+body[data-screen="home"]::before {
+  background:
+    radial-gradient(38% 26% at 12% 8%, rgba(255, 200, 120, 0.55), transparent 70%),
+    radial-gradient(34% 24% at 92% 22%, rgba(255, 150, 200, 0.6), transparent 70%),
+    radial-gradient(44% 30% at 85% 88%, rgba(120, 90, 255, 0.5), transparent 70%),
+    radial-gradient(40% 30% at 8% 78%, rgba(255, 110, 170, 0.5), transparent 70%),
+    linear-gradient(170deg, var(--bg-from) 0%, var(--bg-mid) 50%, var(--bg-to) 100%);
+  background-size: 140% 140%, 140% 140%, 140% 140%, 140% 140%, 100% 100%;
+}
+
 @keyframes bg-drift {
   0% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0 0; }
   100% { background-position: 30% 20%, 70% 30%, 70% 70%, 30% 80%, 0 0; }

@@ -44,7 +44,10 @@ test('Nakış: tablolar dikdörtgen ve sadece paletteki renkleri kullanıyor', (
 test('Nakış: her makara aynı uzunlukta ve her rengin ipi o rengin hücrelerine yetiyor', () => {
   for (const level of NAKIS_LEVELS) {
     const counts = {};
-    for (const ch of level.art.join('')) if (ch !== '.') counts[ch] = (counts[ch] ?? 0) + 1;
+    // çift ilmekli hücre ('a') iki ip ister
+    level.art.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch !== '.') counts[ch] = (counts[ch] ?? 0) + (level.mods?.[y]?.[x] === 'a' ? 2 : 1);
+    }));
     const spools = buildSpoolColumns(level).flat();
     assert.ok(spools.every((s) => s.ammo === level.spool));
     for (const [color, n] of Object.entries(counts)) {

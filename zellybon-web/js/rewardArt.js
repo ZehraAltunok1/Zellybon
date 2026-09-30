@@ -140,6 +140,8 @@ const BADGES = {
   needle: ['🪡', '#C4EEFF', '#1E88B8'],
   box: ['📦', '#D9A27A', '#6B3A1E'],
   magnet: ['🧲', '#FFC6D6', '#B8567A'],
+  randomJoker: ['🃏', '#D2B0F2', '#6523C7'],
+  randomBooster: ['🚀', '#FFC48A', '#B85A1C'],
 };
 
 /** Ödül simgesi: canvas (css boyutu `size`, dpr ile net) */

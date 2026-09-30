@@ -3,6 +3,7 @@ import { NAKIS_LEVELS } from '../nakis/levels.js';
 import { PIN_LEVELS } from '../pins/levels.js';
 import { CHEST_NAMES } from '../economy.js';
 import { CHEST_INFO, CHEST_ORDER, paintChestCanvas } from '../chest.js';
+import { showChestInfo } from './chests.js';
 
 export function renderHome(user) {
   document.getElementById('home-username').textContent = user.username;
@@ -46,6 +47,8 @@ export function renderHome(user) {
     : `Bölüm ${pins} · ${PIN_LEVELS[pins - 1].name}`;
   document.getElementById('home-worm-best').textContent = user.wormBest ? `🏆 Rekor: ${user.wormBest}` : 'Yeni!';
 
+  renderChestShelf(user);
+
   // Sonraki sandığa ilerleme
   const chestEl = document.getElementById('home-chest');
   const chest = user.nextChest;
@@ -72,4 +75,42 @@ export function currentPinLevelId(user) {
 /** Oynanacak Nakış tablosu. */
 export function currentNakisLevelId(user) {
   return Math.min(user.nakisLevel ?? 1, NAKIS_LEVELS.length);
+}
+
+/** Ana sayfa sandık rafı: sahip olunan sandıklar (değerli olan önce), animasyonlu */
+function renderChestShelf(user) {
+  const row = document.getElementById('chest-shelf-row');
+  row.replaceChildren();
+  const chests = [...(user.chests ?? [])].sort((a, b) => CHEST_ORDER.indexOf(b.tier) - CHEST_ORDER.indexOf(a.tier));
+  if (!chests.length) {
+    const empty = document.createElement('p');
+    empty.className = 'muted small chest-shelf-empty';
+    empty.textContent = 'Rafın boş. Jöle Atış ve Nakış bölümlerini geçerek sandık kazan!';
+    row.appendChild(empty);
+    return;
+  }
+  chests.slice(0, 5).forEach((chest, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    const ready = (user.keys ?? 0) >= CHEST_INFO[chest.tier].keys;
+    b.className = `shelf-chest${ready ? ' ready' : ''}`;
+    b.setAttribute('aria-label', `${CHEST_INFO[chest.tier].name}: içinde ne var?`);
+    const c = document.createElement('canvas');
+    c.dataset.tier = chest.tier;
+    c.dataset.offset = String(i * 600);
+    paintChestCanvas(c, chest.tier, 58, { time: i * 600 });
+    const label = document.createElement('small');
+    label.textContent = ready ? 'Açılabilir!' : `🔑 ${CHEST_INFO[chest.tier].keys}`;
+    b.append(c, label);
+    b.addEventListener('click', () => showChestInfo(chest.tier));
+    row.appendChild(b);
+  });
+  if (chests.length > 5) {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'shelf-more';
+    more.dataset.action = 'chests';
+    more.textContent = `+${chests.length - 5}`;
+    row.appendChild(more);
+  }
 }

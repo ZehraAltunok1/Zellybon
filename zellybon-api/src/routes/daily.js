@@ -95,6 +95,15 @@ router.post('/daily/quests/bonus', requireAuth, async (req, res, next) => {
   }
 });
 
+// Sandık içerikleri (açmadan önce önizleme için)
+router.get('/chests/info', (req, res) => {
+  res.json({
+    tiers: CHEST_TIERS.map((t) => ({
+      id: t.id, name: t.name, keys: t.keys, coins: t.coins, lives: t.lives, jokers: t.jokers, boosters: t.boosters,
+    })),
+  });
+});
+
 router.post('/chests/:id/open', requireAuth, async (req, res, next) => {
   try {
     const user = await loadUser(req, res);

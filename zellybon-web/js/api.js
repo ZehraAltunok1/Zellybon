@@ -108,6 +108,7 @@ export const Api = {
   claimQuest: (id) => request(`/daily/quests/${encodeURIComponent(id)}/claim`, { method: 'POST' }),
   claimQuestBonus: () => request('/daily/quests/bonus', { method: 'POST' }),
   openChest: (id) => request(`/chests/${encodeURIComponent(id)}/open`, { method: 'POST' }),
+  chestInfo: () => request('/chests/info', { auth: false }),
 
   // Dükkân
   shop: () => request('/shop', { auth: false }),

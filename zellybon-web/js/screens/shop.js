@@ -2,7 +2,8 @@
 
 import { Api } from '../api.js';
 import { getUser, setUser } from '../session.js';
-import { SHOP_GROUPS, SHOP_ICONS } from '../economy.js';
+import { SHOP_GROUPS } from '../economy.js';
+import { rewardIcon } from '../rewardArt.js';
 
 let catalog = null;
 
@@ -40,15 +41,21 @@ export function renderShop() {
     h.className = 'subtitle';
     h.textContent = group.title;
     const grid = document.createElement('div');
-    grid.className = 'shop-grid';
+    grid.className = `shop-grid shop-${group.theme}`;
     for (const id of group.ids) {
       const item = catalog.find((i) => i.id === id);
       if (!item) continue;
       const card = document.createElement('div');
       card.className = 'shop-card';
-      const icon = document.createElement('span');
+      const grantType = Object.keys(item.grant)[0];
+      const icon = rewardIcon({ type: grantType, count: item.grant[grantType] }, 64);
       icon.className = 'shop-icon';
-      icon.textContent = SHOP_ICONS[id] ?? '🎁';
+      if (item.grant.life > 1) {
+        const tag = document.createElement('span');
+        tag.className = 'shop-amount';
+        tag.textContent = `x${item.grant.life}`;
+        card.appendChild(tag);
+      }
       const name = document.createElement('strong');
       name.textContent = item.name;
       const owned = document.createElement('small');

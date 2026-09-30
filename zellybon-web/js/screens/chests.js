@@ -5,6 +5,45 @@ import { getUser, setUser, renderRewards } from '../session.js';
 import { CHEST_INFO, CHEST_ORDER, paintChestCanvas } from '../chest.js';
 
 let animRaf = 0;
+let infoRaf = 0;
+let tierInfo = null;
+
+/** Sandığın içinden neler çıkacağını açmadan gösterir */
+export async function showChestInfo(tier) {
+  const modal = document.getElementById('chest-info-modal');
+  const info = CHEST_INFO[tier];
+  const list = document.getElementById('chest-info-rewards');
+  document.getElementById('chest-info-title').textContent = `${info.name} içinde neler var?`;
+  document.getElementById('chest-info-keys').textContent = `Açmak için 🔑 ${info.keys} anahtar gerekir`;
+  renderRewards(list, []);
+  modal.hidden = false;
+  const canvas = document.getElementById('chest-info-canvas');
+  const size = Math.min(150, window.innerWidth - 80);
+  cancelAnimationFrame(infoRaf);
+  const tick = (t) => {
+    if (modal.hidden) return;
+    paintChestCanvas(canvas, tier, size, { time: t });
+    infoRaf = requestAnimationFrame(tick);
+  };
+  infoRaf = requestAnimationFrame(tick);
+  document.getElementById('chest-info-close').onclick = () => {
+    modal.hidden = true;
+    cancelAnimationFrame(infoRaf);
+  };
+  try {
+    tierInfo ??= (await Api.chestInfo()).tiers;
+  } catch (err) {
+    document.getElementById('chest-info-keys').textContent = err.message;
+    return;
+  }
+  const t = tierInfo.find((x) => x.id === tier);
+  if (!t) return;
+  const items = [{ type: 'coins', count: t.coins }];
+  if (t.lives) items.push({ type: 'life', count: t.lives });
+  if (t.jokers) items.push({ type: 'randomJoker', count: t.jokers });
+  if (t.boosters) items.push({ type: 'randomBooster', count: t.boosters });
+  renderRewards(list, items);
+}
 let listRaf = 0;
 
 // Sandıklarım ekranı açıkken kart sandıkları canlanır (aura nabzı, parlama geçişi); ekran kapanınca durur
@@ -56,7 +95,13 @@ export function renderChests() {
     btn.textContent = `🔑 ${info.keys} ile aç`;
     btn.disabled = (user.keys ?? 0) < info.keys;
     btn.addEventListener('click', () => openChestFlow(chest));
-    card.append(canvas, name, source, btn);
+    const peek = document.createElement('button');
+    peek.type = 'button';
+    peek.className = 'btn-peek';
+    peek.textContent = '🔍 İçinde ne var?';
+    peek.addEventListener('click', () => showChestInfo(chest.tier));
+    canvas.addEventListener('click', () => showChestInfo(chest.tier));
+    card.append(canvas, name, source, btn, peek);
     grid.appendChild(card);
   }
 
@@ -65,8 +110,11 @@ export function renderChests() {
   legend.replaceChildren();
   for (const tier of CHEST_ORDER) {
     const info = CHEST_INFO[tier];
-    const item = document.createElement('div');
+    const item = document.createElement('button');
+    item.type = 'button';
     item.className = 'legend-item';
+    item.setAttribute('aria-label', `${info.name}: içinde ne var?`);
+    item.addEventListener('click', () => showChestInfo(tier));
     const canvas = chestCanvas(tier, 52, CHEST_ORDER.indexOf(tier) * 500);
     const label = document.createElement('small');
     label.textContent = `${info.name.replace(' Sandık', '')} · 🔑${info.keys}`;

@@ -26,6 +26,8 @@ export const REWARD_LABELS = {
   coins: { icon: '🪙', name: 'Para' },
   key: { icon: '🔑', name: 'Anahtar' },
   chest: { icon: '🎁', name: 'Sandık' },
+  randomJoker: { icon: '🃏', name: 'Rastgele joker' },
+  randomBooster: { icon: '🚀', name: 'Güçlendirici' },
   life: { icon: '❤️', name: 'Can' },
   extraSlot: { icon: '📦', name: 'Ekstra Kutu' },
   superStart: { icon: '⭐', name: 'Süper Başlangıç' },
@@ -40,10 +42,10 @@ export const REWARD_LABELS = {
 };
 
 export const SHOP_GROUPS = [
-  { title: 'Canlar', ids: ['life1', 'lifeFull'] },
-  { title: 'Jöle Atış güçlendiricileri', ids: ['extraSlot', 'superStart'] },
-  { title: 'Nakış jokerleri', ids: ['scissors', 'needle', 'box', 'magnet'] },
-  { title: 'Jöle Patlat jokerleri', ids: ['hammer', 'shuffle', 'hourglass', 'colorBomb'] },
+  { title: 'Canlar', theme: 'lives', ids: ['life1', 'lifeFull'] },
+  { title: 'Jöle Atış güçlendiricileri', theme: 'main', ids: ['extraSlot', 'superStart'] },
+  { title: 'Nakış jokerleri', theme: 'nakis', ids: ['scissors', 'needle', 'box', 'magnet'] },
+  { title: 'Jöle Patlat jokerleri', theme: 'match', ids: ['hammer', 'shuffle', 'hourglass', 'colorBomb'] },
 ];
 
 export const SHOP_ICONS = {

@@ -3,6 +3,8 @@
 
 import { NAKIS_LEVELS } from '../nakis/levels.js';
 import { PALETTE, rgba } from '../palette.js';
+import { chestMilestones, paintChestCanvas } from '../chest.js';
+import { showChestInfo } from './chests.js';
 
 const THUMB = 84;
 
@@ -29,12 +31,25 @@ function drawThumb(canvas, art, state) {
   }));
 }
 
+export function mapChest(tier) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'map-chest';
+  b.setAttribute('aria-label', 'Sandık: içinde ne var?');
+  const c = document.createElement('canvas');
+  paintChestCanvas(c, tier, 38, { time: 500 });
+  b.appendChild(c);
+  b.addEventListener('click', () => showChestInfo(tier));
+  return b;
+}
+
 export function renderNakisMap(user, onPick) {
   const current = user.nakisLevel ?? 1;
   const done = Math.min(current - 1, NAKIS_LEVELS.length);
   document.getElementById('nakis-progress').textContent = `${done} / ${NAKIS_LEVELS.length}`;
   const grid = document.getElementById('nakis-grid');
   grid.replaceChildren();
+  const chests = new Map(chestMilestones(NAKIS_LEVELS.length).map((m) => [m.level, m.tier]));
   for (const level of NAKIS_LEVELS) {
     const state = level.id < current ? 'done' : level.id === current ? 'current' : 'locked';
     const btn = document.createElement('button');
@@ -60,7 +75,12 @@ export function renderNakisMap(user, onPick) {
       btn.appendChild(check);
     }
     if (state !== 'locked') btn.addEventListener('click', () => onPick(level.id));
-    grid.appendChild(btn);
+    const tile = document.createElement('div');
+    tile.className = 'map-tile-wrap';
+    tile.appendChild(btn);
+    // Sandık veren tablo: köşede sandık (dokununca içeriği görünür)
+    if (chests.has(level.id) && state !== 'done') tile.appendChild(mapChest(chests.get(level.id)));
+    grid.appendChild(tile);
   }
   grid.querySelector('.nakis-tile.current')?.scrollIntoView({ block: 'center' });
 }

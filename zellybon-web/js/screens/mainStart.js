@@ -1,7 +1,9 @@
 // Jöle Atış bölüm öncesi ekranı: bölümün jöle şekli, yeni karakter tanıtımı,
 // sonraki sandık ve güçlendirici seçimi.
 
-import { getMainLevel } from '../shooter/levels.js';
+import { getMainLevel, MAIN_LEVELS } from '../shooter/levels.js';
+import { chestMilestones, paintChestCanvas, CHEST_INFO } from '../chest.js';
+import { showChestInfo } from './chests.js';
 import { renderGummy, drawAbilityBadge, ABILITIES, SHAPES } from '../shooter/shapes.js';
 import { BOOSTERS, CHEST_NAMES } from '../economy.js';
 
@@ -74,6 +76,8 @@ export function renderMainStart(user, levelId) {
     chestEl.classList.toggle('chest-now', left === 0);
   }
 
+  renderChestRoad(user);
+
   const list = document.getElementById('ms-boosters');
   list.replaceChildren();
   for (const b of BOOSTERS) {
@@ -105,5 +109,26 @@ export function renderMainStart(user, levelId) {
       btn.setAttribute('aria-pressed', String(on));
     });
     list.appendChild(btn);
+  }
+}
+
+/** Sandık yolu: sıradaki sandık veren bölümler (dokununca içeriği görünür) */
+function renderChestRoad(user) {
+  const road = document.getElementById('ms-road');
+  road.replaceChildren();
+  const next = chestMilestones(MAIN_LEVELS.length).filter((m) => m.level >= user.mainLevel).slice(0, 4);
+  road.hidden = next.length === 0;
+  for (const m of next) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `road-stop${m.level === user.mainLevel ? ' now' : ''}`;
+    b.setAttribute('aria-label', `Bölüm ${m.level}: ${CHEST_INFO[m.tier].name}, içinde ne var?`);
+    const c = document.createElement('canvas');
+    paintChestCanvas(c, m.tier, 48, { time: 400 });
+    const label = document.createElement('small');
+    label.textContent = `Bölüm ${m.level}`;
+    b.append(c, label);
+    b.addEventListener('click', () => showChestInfo(m.tier));
+    road.appendChild(b);
   }
 }

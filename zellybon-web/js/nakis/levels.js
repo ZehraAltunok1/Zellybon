@@ -250,6 +250,12 @@ const BASE_LEVELS = [
       'nnnnnnkkkndddd',
     ],
   },
+  // ---- 25–29: çift ilmek ve düğümlerle son tablolar (resimler Jöle Atış'tan) ----
+  { id: 25, name: 'Roket', spool: 8, slots: 2, columns: 3, belt: 3, shuffle: 2, slack: 1, seed: 'nakis-26', art: artOf('Roket'), mods: modsOf('Roket') },
+  { id: 26, name: 'Kaplumbağa', spool: 6, slots: 2, columns: 3, belt: 3, shuffle: 6, slack: 1, seed: 'nakis-25', art: artOf('Kaplumbağa'), mods: modsOf('Kaplumbağa') },
+  { id: 27, name: 'Dondurma', spool: 6, slots: 2, columns: 3, belt: 4, shuffle: 2, slack: 1, seed: 'nakis-27', art: artOf('Dondurma'), mods: modsOf('Dondurma') },
+  { id: 28, name: 'Deniz Feneri', spool: 6, slots: 3, columns: 4, belt: 3, shuffle: 6, slack: 1, seed: 'nakis-28', art: artOf('Deniz Feneri'), mods: modsOf('Deniz Feneri') },
+  { id: 29, name: 'Gökkuşağı', spool: 6, slots: 3, columns: 4, belt: 3, shuffle: 4, slack: 1, seed: 'nakis-29', art: artOf('Gökkuşağı'), mods: modsOf('Gökkuşağı') },
 ];
 
 // El yapımı tabloların ardından ajanın planladığı tablolar gelir (bkz. level-agent)
@@ -259,6 +265,10 @@ function artOf(name) {
   const level = MAIN_LEVELS.find((l) => l.name === name);
   if (!level) throw new Error(`Jöle Atış'ta '${name}' resmi yok`);
   return level.art;
+}
+
+function modsOf(name) {
+  return MAIN_LEVELS.find((l) => l.name === name)?.mods;
 }
 
 export const getNakisLevel = (id) => NAKIS_LEVELS.find((l) => l.id === id) ?? null;

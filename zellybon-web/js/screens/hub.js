@@ -4,6 +4,7 @@ import { LEVELS, isUnlocked, totalStars } from '../game/levels.js';
 export function renderHub(user) {
   document.getElementById('hub-best').textContent = (user.bestScore ?? 0).toLocaleString('tr-TR');
   document.getElementById('hub-stars').textContent = String(totalStars(user.levels));
+  document.getElementById('hub-stars-max').textContent = String(LEVELS.length * 3);
 
   const inv = document.getElementById('hub-jokers');
   inv.replaceChildren();

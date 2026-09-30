@@ -6,8 +6,8 @@ import {
 } from '../js/pins/engine.js';
 import { createWormEngine, ROUND_S, START_MASS } from '../js/worm/engine.js';
 
-test('İğnedenlik: 30 bölümün hepsi çözülebilir (±35 ms zamanlama hatasıyla bile)', () => {
-  assert.equal(PIN_LEVELS.length, 30);
+test('İğnedenlik: 35 bölümün hepsi çözülebilir (±35 ms zamanlama hatasıyla bile)', () => {
+  assert.equal(PIN_LEVELS.length, 35);
   for (const level of PIN_LEVELS) {
     assert.ok(solvePins(level).won, `bölüm ${level.id}`);
   }

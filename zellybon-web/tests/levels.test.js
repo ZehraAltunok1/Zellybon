@@ -4,8 +4,8 @@ import { createRng } from '../js/game/rng.js';
 import { createBoard, blast, cellsOfColor, findMatches } from '../js/game/board.js';
 import { LEVELS, goalsMet, starsFor, isUnlocked, isCollectLevel } from '../js/game/levels.js';
 
-test('Jöle Patlat: 20 bölüm, sıralı id ve geçerli hedefler', () => {
-  assert.equal(LEVELS.length, 20);
+test('Jöle Patlat: 25 bölüm, sıralı id ve geçerli hedefler', () => {
+  assert.equal(LEVELS.length, 25);
   LEVELS.forEach((l, i) => {
     assert.equal(l.id, i + 1);
     assert.ok(l.goals.length >= 1);

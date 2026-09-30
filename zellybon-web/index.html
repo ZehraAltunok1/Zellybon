@@ -78,6 +78,14 @@
         </div>
       </nav>
 
+      <section class="chest-shelf" aria-label="Sandık rafı">
+        <div class="chest-shelf-head">
+          <strong>🎁 Sandık rafı</strong>
+          <button class="btn-small" data-action="chests">Hepsi ›</button>
+        </div>
+        <div id="chest-shelf-row" class="chest-shelf-row"></div>
+      </section>
+
       <article class="game-card game-card-main">
         <div class="game-art-wrap">
           <canvas class="game-art" data-art="main" data-action="main-play" aria-hidden="true"></canvas>
@@ -160,6 +168,7 @@
         </div>
       </div>
       <p id="ms-chest" class="chest-line" hidden></p>
+      <div id="ms-road" class="chest-road" aria-label="Sıradaki sandıklar"></div>
       <h3 class="subtitle">Güçlendiriciler</h3>
       <div id="ms-boosters" class="booster-list"></div>
       <div class="lives-card card" data-lives>
@@ -225,6 +234,18 @@
       </div>
     </div>
 
+    <!-- Sandık içerik önizleme -->
+    <div id="chest-info-modal" class="modal" hidden>
+      <div class="modal-card">
+        <h2 id="chest-info-title" class="title"></h2>
+        <canvas id="chest-info-canvas" aria-hidden="true"></canvas>
+        <p id="chest-info-keys" class="muted"></p>
+        <ul id="chest-info-rewards" class="rewards" hidden></ul>
+        <p class="muted small">Jokerler Jöle Patlat ve Nakış jokerlerinden rastgele seçilir.</p>
+        <button id="chest-info-close" class="btn btn-primary">Tamam</button>
+      </div>
+    </div>
+
     <!-- Dükkân -->
     <section class="screen" data-screen="shop" hidden>
       <header class="page-head">
@@ -232,7 +253,7 @@
         <h2 class="title">Dükkân</h2>
         <span class="coin-pill coin-pill-static">🪙 <b id="shop-coins">0</b></span>
       </header>
-      <p class="muted small">Paraları Jöle Atış'ta yeni bölümleri geçerek ve sandıklardan kazanırsın.</p>
+      <p class="muted small">Paraları yeni bölümleri geçerek, Jöle Solucan'da ve sandıklardan kazanırsın.</p>
       <p id="shop-status" class="muted small" role="status"></p>
       <div id="shop-groups"></div>
     </section>
@@ -428,7 +449,7 @@
         <button class="mode-card" data-action="levels">
           <span class="mode-icon">🗺️</span>
           <strong>Bölümler</strong>
-          <small>⭐ <b id="hub-stars">0</b> / 60</small>
+          <small>⭐ <b id="hub-stars">0</b> / <span id="hub-stars-max">75</span></small>
           <small class="mode-reward">Her galibiyet = ❤️ +1 can</small>
         </button>
       </div>

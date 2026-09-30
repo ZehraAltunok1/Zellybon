@@ -54,6 +54,26 @@ const BASE_LEVELS = [
   { id: 18, colors: 6, moves: 22, goals: [{ type: 'score', value: 1750 }], stars: [2000, 2400] },
   { id: 19, colors: 6, moves: 25, goals: [{ type: 'collect', color: 1, count: 26 }], stars: [1800, 2300] },
   { id: 20, colors: 6, moves: 25, goals: [{ type: 'score', value: 2000 }], stars: [2300, 2800] },
+  // ---- 21–25: buzlu son bölümler ----
+  {
+    id: 21, colors: 6, moves: 16, goals: [{ type: 'ice' }], stars: [1000, 1500],
+    ice: ['........', '........', '........', 'xxxxxxxx', 'xxxxxxxx', '........', '........', '........'],
+  },
+  {
+    id: 22, colors: 6, moves: 16,
+    goals: [{ type: 'ice' }, { type: 'collect', color: 2, count: 14 }, { type: 'collect', color: 5, count: 14 }],
+    stars: [1100, 1600],
+    ice: ['........', '........', '..xxxx..', '..xxxx..', '..xxxx..', '..xxxx..', '........', '........'],
+  },
+  { id: 23, colors: 6, moves: 26, goals: [{ type: 'score', value: 2200 }], stars: [2500, 3000] },
+  {
+    id: 24, colors: 6, moves: 16, goals: [{ type: 'ice' }, { type: 'collect', color: 0, count: 12 }], stars: [1100, 1600],
+    ice: ['........', '...xx...', '..xxxx..', '.xxxxxx.', '.xxxxxx.', '..xxxx..', '...xx...', '........'],
+  },
+  {
+    id: 25, colors: 6, moves: 26, goals: [{ type: 'ice' }, { type: 'score', value: 1800 }], stars: [2200, 2800],
+    ice: ['........', 'xxxxxxxx', '........', '........', '........', '........', 'xxxxxxxx', '........'],
+  },
 ];
 
 // El yapımı bölümlerin ardından ajanın planladığı bölümler gelir (bkz. level-agent)

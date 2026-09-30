@@ -11,7 +11,7 @@ const TAU = Math.PI * 2;
 export const WORLD_R = 1300;
 export const ROUND_S = 180;
 export const START_MASS = 20;
-export const BOT_COUNT = 9;
+export const BOT_COUNT = 7;
 const FOOD_TARGET = 650;
 const POWER_MAX = 4;
 const CELL = 64;
@@ -37,7 +37,8 @@ const FOOD_COLORS = ['r', 'o', 'y', 'g', 'b', 'p', 'i', 'c', 'e', 'm', 'l'];
 
 export const segCount = (mass) => 8 + Math.floor(mass / 3);
 export const radiusOf = (mass) => 8 + Math.min(16, Math.sqrt(mass) * 0.65);
-const speedOf = (w) => (w.boosting ? 270 : 150);
+// Botlar oyuncudan biraz yavaştır: kaçmak ve önlerini kesmek mümkün olsun
+const speedOf = (w) => (w.boosting ? 270 : 150) * (w.isPlayer ? 1 : 0.88);
 const turnRateOf = (mass) => 4.6 - Math.min(2, mass / 400);
 
 function cellKey(cx, cy) {
@@ -102,7 +103,7 @@ export function createWormEngine({ seed = 'worm', skin = SKINS[0], bots = BOT_CO
       effects: { magnet: 0, shield: 0, turbo: 0 },
       respawnAt: 0,
       diedAt: 0,
-      ai: { next: 0, skill: rand(0.35, 1), aggression: rand(0.1, 0.6), wander: rand(TAU) },
+      ai: { next: 0, skill: rand(0.3, 0.9), aggression: rand(0.05, 0.3), wander: rand(TAU) },
     };
   }
 
@@ -118,7 +119,7 @@ export function createWormEngine({ seed = 'worm', skin = SKINS[0], bots = BOT_CO
   function spawnBot(existing = null) {
     const skinDef = { a: FOOD_COLORS[Math.floor(rand(FOOD_COLORS.length))], b: FOOD_COLORS[Math.floor(rand(FOOD_COLORS.length))] };
     // Bazı botlar büyük başlar: taç için rekabet olsun
-    const mass = rng.next() < 0.3 ? rand(90, 200) : rand(20, 70);
+    const mass = rng.next() < 0.2 ? rand(60, 130) : rand(15, 50);
     const name = existing?.name ?? BOT_NAMES[state.worms.length % BOT_NAMES.length];
     const w = makeWorm({ name, skinDef, mass, at: farFromPlayer() });
     if (existing) Object.assign(existing, { ...w, id: existing.id, name, kills: existing.kills });
@@ -128,6 +129,7 @@ export function createWormEngine({ seed = 'worm', skin = SKINS[0], bots = BOT_CO
   // Başlangıç
   state.player = makeWorm({ name: playerName, skinDef: skin, mass: START_MASS, isPlayer: true, at: randomPoint(300) });
   state.worms.push(state.player);
+  state.player.effects.shield = 3; // başlangıç koruması: ilk 3 sn çarpışma yok
   for (let k = 0; k < bots; k++) spawnBot();
   for (let k = 0; k < FOOD_TARGET; k++) spawnFood();
 
@@ -213,10 +215,10 @@ export function createWormEngine({ seed = 'worm', skin = SKINS[0], bots = BOT_CO
     }
 
     // Avlanma: küçük bir solucanın önünü kes
-    if (w.ai.skill > 0.6 && w.mass > 45) {
+    if (w.ai.skill > 0.75 && w.mass > 60) {
       let prey = null;
       for (const o of state.worms) {
-        if (o === w || !o.alive || o.mass * 1.1 > w.mass) continue;
+        if (o === w || !o.alive || o.mass * (o.isPlayer ? 1.6 : 1.1) > w.mass) continue;
         const d = Math.hypot(o.pts[0].x - head.x, o.pts[0].y - head.y);
         if (d < 260 && (!prey || d < prey.d)) prey = { o, d };
       }
@@ -356,7 +358,7 @@ export function createWormEngine({ seed = 'worm', skin = SKINS[0], bots = BOT_CO
       let hit = null;
       query(segGrid, head.x, head.y, w.r + 30, (s) => {
         if (hit || s.w === w || !s.w.alive) return;
-        if (Math.hypot(s.x - head.x, s.y - head.y) < w.r * 0.5 + s.w.r * 0.8) hit = s.w;
+        if (Math.hypot(s.x - head.x, s.y - head.y) < (w.isPlayer ? w.r * 0.35 + s.w.r * 0.7 : w.r * 0.5 + s.w.r * 0.8)) hit = s.w;
       });
       if (hit) kill(w, hit, events);
     }
