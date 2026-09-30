@@ -3,6 +3,7 @@
 
 import { PALETTE } from '../palette.js';
 import { SHAPE_ORDER } from './shapes.js';
+import { GENERATED_SHOOTER } from '../generated/shooter.js';
 
 export const CUBE_COLORS = Object.fromEntries(Object.entries(PALETTE).map(([k, v]) => [k, v.base]));
 
@@ -357,7 +358,8 @@ const RAW_LEVELS = [
 ];
 
 // Her bölümün jöle şekli sırayla döner: ayıcık, kalp, kola şişesi, yıldız, halka, çilek
-export const MAIN_LEVELS = RAW_LEVELS.map((l) => ({
+// El yapımı bölümlerin ardından ajanın planladığı bölümler gelir (bkz. level-agent)
+export const MAIN_LEVELS = [...RAW_LEVELS, ...GENERATED_SHOOTER].map((l) => ({
   abilities: [],
   abilityRate: 0,
   intro: null,

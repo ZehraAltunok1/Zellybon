@@ -8,8 +8,9 @@
 // Değerler simülasyonla ayarlandı: rastgele oynayan birinin kazanma oranı %100'den %38'e iner.
 
 import { MAIN_LEVELS } from '../shooter/levels.js';
+import { GENERATED_NAKIS } from '../generated/nakis.js';
 
-export const NAKIS_LEVELS = [
+const BASE_LEVELS = [
   {
     id: 1, name: 'Kalp', spool: 6, slots: 5, columns: 2, belt: 3, shuffle: 0, slack: 1,
     tip: 'Önce içteki pembeyi işle: kırmızı çerçeve kapanırsa pembeye yol kalmaz!',
@@ -250,6 +251,9 @@ export const NAKIS_LEVELS = [
     ],
   },
 ];
+
+// El yapımı tabloların ardından ajanın planladığı tablolar gelir (bkz. level-agent)
+export const NAKIS_LEVELS = [...BASE_LEVELS, ...GENERATED_NAKIS];
 
 function artOf(name) {
   const level = MAIN_LEVELS.find((l) => l.name === name);

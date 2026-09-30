@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { MAIN_LEVELS, CUBE_COLORS } from '../js/shooter/levels.js';
 import {
-  parseArt, buildColumns, createEngine, firstCubeInLane, laneInfo,
+  parseArt, parseMods, buildColumns, createEngine, firstCubeInLane, laneInfo,
 } from '../js/shooter/engine.js';
 import { playSmart as autoplay } from '../js/shooter/bot.js';
 
@@ -16,10 +16,13 @@ test('tüm resimler dikdörtgen ve sadece tanımlı renkleri kullanıyor', () =>
   }
 });
 
-test('her rengin toplam mermisi o renkteki küp sayısına eşit ve üretim deterministik', () => {
+test('her rengin toplam mermisi o renkteki vuruş sayısına eşit (zırhlı küp 2) ve üretim deterministik', () => {
   for (const level of MAIN_LEVELS) {
+    const { hp } = parseMods(level);
     const counts = {};
-    for (const ch of level.art.join('')) if (ch !== '.') counts[ch] = (counts[ch] ?? 0) + 1;
+    level.art.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch !== '.') counts[ch] = (counts[ch] ?? 0) + hp[y][x];
+    }));
     const cols = buildColumns(level);
     assert.equal(cols.length, level.columns);
     const ammo = {};

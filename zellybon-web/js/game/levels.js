@@ -9,9 +9,11 @@
 // ice: isteğe bağlı 8 satırlık buz katmanı ('x' = buzlu hücre, '.' = buzsuz)
 // stars: [2 yıldız, 3 yıldız] puan eşikleri (bölümü geçmek 1 yıldız)
 
+import { GENERATED_MATCH } from '../generated/match.js';
+
 export const MOVE_BONUS = 60; // toplama bölümünde artan her hamle için bonus puan
 
-export const LEVELS = [
+const BASE_LEVELS = [
   { id: 1, colors: 5, moves: 20, goals: [{ type: 'score', value: 1200 }], stars: [1900, 2600] },
   { id: 2, colors: 5, moves: 20, goals: [{ type: 'collect', color: 0, count: 18 }], stars: [1600, 2300] },
   { id: 3, colors: 5, moves: 20, goals: [{ type: 'collect', color: 4, count: 20 }], stars: [1700, 2400] },
@@ -53,6 +55,9 @@ export const LEVELS = [
   { id: 19, colors: 6, moves: 25, goals: [{ type: 'collect', color: 1, count: 26 }], stars: [1800, 2300] },
   { id: 20, colors: 6, moves: 25, goals: [{ type: 'score', value: 2000 }], stars: [2300, 2800] },
 ];
+
+// El yapımı bölümlerin ardından ajanın planladığı bölümler gelir (bkz. level-agent)
+export const LEVELS = [...BASE_LEVELS, ...GENERATED_MATCH];
 
 export const getLevel = (id) => LEVELS.find((l) => l.id === id) ?? null;
 

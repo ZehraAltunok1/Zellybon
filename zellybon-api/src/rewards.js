@@ -7,9 +7,12 @@ export const NAKIS_JOKER_TYPES = ['scissors', 'needle', 'box', 'magnet'];       
 export const STARTING_JOKERS = { hammer: 1, shuffle: 1, colorBomb: 1, hourglass: 1 };
 export const STARTING_BOOSTERS = { extraSlot: 1, superStart: 1 };
 export const STARTING_NAKIS_JOKERS = { scissors: 2, needle: 2, box: 2, magnet: 2 };
-export const MATCH_LEVEL_COUNT = 20; // Jöle Patlat bölümleri
-export const MAIN_LEVEL_COUNT = 20;  // Jöle Atış bölümleri
-export const NAKIS_LEVEL_COUNT = 24; // Nakış tabloları
+// Bölüm sayıları: el yapımı + ajanın planladığı bölümler (level-agent bu dosyayı günceller)
+import LEVEL_COUNTS from './level-counts.json' with { type: 'json' };
+
+export const MATCH_LEVEL_COUNT = LEVEL_COUNTS.match; // Jöle Patlat bölümleri
+export const MAIN_LEVEL_COUNT = LEVEL_COUNTS.main;   // Jöle Atış bölümleri
+export const NAKIS_LEVEL_COUNT = LEVEL_COUNTS.nakis; // Nakış tabloları
 
 export const LIVES_MAX = 5;
 export const LIFE_REGEN_MS = 5 * 60 * 1000;
