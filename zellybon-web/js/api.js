@@ -97,6 +97,11 @@ export const Api = {
   nakisResult: (levelId, won) => request('/nakis/result', { method: 'POST', body: { levelId, won } }),
   nakisJoker: (type) => request('/nakis/jokers/use', { method: 'POST', body: { type } }),
 
+  // İğnedenlik ve Jöle Solucan
+  pinsResult: (levelId, won) => request('/pins/result', { method: 'POST', body: { levelId, won } }),
+  wormResult: ({ score, kills, rank, crowned, durationMs }) =>
+    request('/worm/result', { method: 'POST', body: { score, kills, rank, crowned, durationMs } }),
+
   // Günlük ödüller ve sandıklar
   daily: () => request('/daily'),
   claimLogin: () => request('/daily/login', { method: 'POST' }),

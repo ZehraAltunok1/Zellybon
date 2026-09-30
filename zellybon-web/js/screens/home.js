@@ -1,5 +1,6 @@
 import { MAIN_LEVELS } from '../shooter/levels.js';
 import { NAKIS_LEVELS } from '../nakis/levels.js';
+import { PIN_LEVELS } from '../pins/levels.js';
 import { CHEST_NAMES } from '../economy.js';
 import { CHEST_INFO, CHEST_ORDER, paintChestCanvas } from '../chest.js';
 
@@ -39,6 +40,12 @@ export function renderHome(user) {
     ? `🏆 ${NAKIS_LEVELS.length} tablonun hepsi işlendi!`
     : `Tablo ${nakis} · ${NAKIS_LEVELS[nakis - 1].name}`;
 
+  const pins = user.pinLevel ?? 1;
+  document.getElementById('home-pins-level').textContent = pins > PIN_LEVELS.length
+    ? `🏆 ${PIN_LEVELS.length} bölümün hepsi tamam!`
+    : `Bölüm ${pins} · ${PIN_LEVELS[pins - 1].name}`;
+  document.getElementById('home-worm-best').textContent = user.wormBest ? `🏆 Rekor: ${user.wormBest}` : 'Yeni!';
+
   // Sonraki sandığa ilerleme
   const chestEl = document.getElementById('home-chest');
   const chest = user.nextChest;
@@ -55,6 +62,11 @@ export function renderHome(user) {
 /** Oynanacak ana oyun bölümü: açılmış en yüksek bölüm (hepsi bittiyse sonuncusu). */
 export function currentMainLevelId(user) {
   return Math.min(user.mainLevel, MAIN_LEVELS.length);
+}
+
+/** Oynanacak İğnedenlik bölümü. */
+export function currentPinLevelId(user) {
+  return Math.min(user.pinLevel ?? 1, PIN_LEVELS.length);
 }
 
 /** Oynanacak Nakış tablosu. */

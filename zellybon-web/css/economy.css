@@ -186,3 +186,109 @@
   25% { transform: rotate(-12deg); }
   75% { transform: rotate(12deg); }
 }
+
+/* ---------- İğnedenlik ---------- */
+
+.game-card-pins {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.16) 1.5px, transparent 2px) 0 0 / 14px 14px,
+    linear-gradient(145deg, rgba(237, 141, 170, 0.75), rgba(155, 95, 214, 0.6));
+}
+
+.board-wrap-pins { align-items: flex-start; }
+#pins-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; }
+
+/* ---------- Jöle Solucan ---------- */
+
+.game-card-worm {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.14) 1.5px, transparent 2px) 0 0 / 16px 16px,
+    linear-gradient(145deg, rgba(245, 138, 58, 0.7), rgba(239, 205, 67, 0.55));
+}
+
+.hud-worm { grid-template-columns: auto 1fr 1fr 1fr; }
+.screen-worm .board-wrap-worm { position: relative; border-radius: 22px; overflow: hidden; }
+#worm-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+
+.worm-board {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  list-style: none;
+  border-radius: 14px;
+  background: rgba(22, 44, 66, 0.55);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  pointer-events: none;
+  max-width: 46%;
+}
+
+.worm-board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.worm-board li.me { color: #EFCD43; }
+
+.worm-powers {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(22, 44, 66, 0.8);
+}
+
+.worm-boost {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle at 35% 30%, #FFF0A0, #EFCD43 55%, #C98A10);
+  box-shadow: 0 6px 0 #8A5A00, 0 10px 20px rgba(12, 30, 48, 0.4);
+  font-size: 2rem;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+
+.worm-boost.active { transform: translateY(4px) scale(0.95); box-shadow: 0 2px 0 #8A5A00, 0 0 24px rgba(255, 224, 122, 0.9); }
+
+.worm-preview { display: block; align-self: center; }
+
+.worm-skins { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+
+.worm-skin {
+  font: inherit;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 2px 6px;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(22, 44, 66, 0.3);
+  cursor: pointer;
+}
+
+.worm-skin small { font-size: 0.7rem; font-weight: 700; }
+.worm-skin.selected { border-color: #EFCD43; box-shadow: 0 0 14px rgba(239, 205, 67, 0.6); }
+
+.worm-skin-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: repeating-linear-gradient(135deg, var(--a) 0 7px, var(--b) 7px 14px);
+  box-shadow: inset -3px -4px 0 rgba(0, 0, 0, 0.2), inset 3px 3px 0 rgba(255, 255, 255, 0.35);
+}
+
+.worm-rules { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.worm-rules p { margin: 0; line-height: 1.35; }
+.board-wrap-worm .game-hint { top: auto; bottom: 104px; }

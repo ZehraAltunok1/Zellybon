@@ -47,6 +47,8 @@ export const QUEST_POOL = [
   { id: 'quick_score', kind: 'quick_score', target: 1, text: "Hızlı Tur'da 1.500 puan yap", reward: { type: 'key', count: 1 } },
   { id: 'match_win', kind: 'match_win', target: 1, text: "Jöle Patlat'ta 1 bölüm geç", reward: { type: 'key', count: 1 } },
   { id: 'play5', kind: 'play', target: 5, text: 'Herhangi bir oyunda 5 kez oyna', reward: { type: 'coins', count: 40 } },
+  { id: 'pins_win', kind: 'pins_win', target: 2, text: "İğnedenlik'te 2 bölüm geç", reward: { type: 'key', count: 1 } },
+  { id: 'worm_score', kind: 'worm_score', target: 1, text: "Jöle Solucan'da 300 boya ulaş", reward: { type: 'key', count: 1 } },
   { id: 'jokers3', kind: 'use_joker', target: 3, text: '3 joker kullan', reward: { type: 'key', count: 1 } },
 ];
 export const QUEST_BONUS = { type: 'key', count: 1 }; // üç görev de tamamlanınca
@@ -82,7 +84,7 @@ export function ensureQuests(user, now = new Date()) {
   };
 }
 
-/** Bir oyun olayı görev ilerlemesini artırır (kind: main_win, nakis_win, quick_score, match_win, play, use_joker). */
+/** Bir oyun olayı görev ilerlemesini artırır (kind: main_win, nakis_win, pins_win, worm_score, quick_score, match_win, play, use_joker). */
 export function bumpQuest(user, kind, amount = 1, now = new Date()) {
   ensureQuests(user, now);
   for (const item of user.quests.items) {

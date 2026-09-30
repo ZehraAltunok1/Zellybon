@@ -13,6 +13,7 @@ import LEVEL_COUNTS from './level-counts.json' with { type: 'json' };
 export const MATCH_LEVEL_COUNT = LEVEL_COUNTS.match; // Jöle Patlat bölümleri
 export const MAIN_LEVEL_COUNT = LEVEL_COUNTS.main;   // Jöle Atış bölümleri
 export const NAKIS_LEVEL_COUNT = LEVEL_COUNTS.nakis; // Nakış tabloları
+export const PINS_LEVEL_COUNT = LEVEL_COUNTS.pins;   // İğnedenlik bölümleri
 
 export const LIVES_MAX = 5;
 export const LIFE_REGEN_MS = 5 * 60 * 1000;
@@ -119,6 +120,26 @@ export function nakisRewards(levelId, random = Math.random) {
     const type = NAKIS_JOKER_TYPES[Math.floor(random() * NAKIS_JOKER_TYPES.length)];
     rewards.push({ type, count: 1, reason: `Tablo ${levelId} hediyesi` });
   }
+  return rewards;
+}
+
+/** İğnedenlik bölümü ilk kez geçilince: para, her 5 bölümde bir anahtar. */
+export function pinsRewards(levelId) {
+  const rewards = [{ type: 'coins', count: 6 + levelId * 3, reason: `İğnedenlik ${levelId}. bölüm` }];
+  if (levelId % 5 === 0) rewards.push({ type: 'key', count: 1, reason: `İğnedenlik ${levelId}. bölüm hediyesi` });
+  return rewards;
+}
+
+/** Jöle Solucan turu sonunda: boya göre can ve para, taç ve yenilen solucanlar için ek para. */
+export function wormRewards({ score, kills, crowned, isNewBest }) {
+  const rewards = [];
+  if (score >= 700) rewards.push({ type: 'life', count: 2, reason: '700+ boy' });
+  else if (score >= 300) rewards.push({ type: 'life', count: 1, reason: '300+ boy' });
+  const coins = Math.min(50, Math.floor(score / 20));
+  if (coins > 0) rewards.push({ type: 'coins', count: coins, reason: `${score} boy` });
+  if (crowned) rewards.push({ type: 'coins', count: 25, reason: 'Taç senin! 👑' });
+  if (kills > 0) rewards.push({ type: 'coins', count: Math.min(25, kills * 5), reason: `${kills} solucan yendin` });
+  if (isNewBest) rewards.push({ type: 'coins', count: 10, reason: 'Yeni rekor' });
   return rewards;
 }
 

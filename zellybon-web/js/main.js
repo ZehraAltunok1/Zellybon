@@ -20,7 +20,11 @@ import { renderNakisMap } from './screens/nakisMap.js';
 import { renderChests } from './screens/chests.js';
 import { showDaily } from './screens/daily.js';
 import { startHomeArt, stopHomeArt } from './screens/illustrations.js';
-import { renderHome, currentMainLevelId, currentNakisLevelId } from './screens/home.js';
+import { renderHome, currentMainLevelId, currentNakisLevelId, currentPinLevelId } from './screens/home.js';
+import { PinsGame } from './pins/game.js';
+import { getPinLevel } from './pins/levels.js';
+import { WormGame } from './worm/game.js';
+import { renderPinsMap, showPinsResult, renderWormLobby, showWormResult, selectedSkin } from './screens/arcade.js';
 import { renderHub, renderLevelMap } from './screens/hub.js';
 import { showQuickResult, showLevelResult } from './screens/result.js';
 import { showShooterResult } from './screens/shooterResult.js';
@@ -33,6 +37,7 @@ let current = 'loading';
 let previous = null;
 let matchGame = null;   // Jöle Patlat oturumu
 let shooterGame = null; // Jöle Atış / Nakış oturumu
+let arcadeGame = null;  // İğnedenlik / Jöle Solucan oturumu
 let shooterMode = 'main'; // 'main' | 'nakis'
 let shopReturn = 'home'; // dükkândan dönülecek ekran
 
@@ -53,6 +58,8 @@ function stopGames() {
   matchGame = null;
   shooterGame?.destroy();
   shooterGame = null;
+  arcadeGame?.destroy();
+  arcadeGame = null;
 }
 
 // ---------- Canlar ----------
@@ -209,6 +216,68 @@ function playNakis(levelId = currentNakisLevelId(getUser())) {
   });
 }
 
+// ---------- İğnedenlik ----------
+
+function goPinsMap() {
+  stopGames();
+  show('pins-map');
+  renderPinsMap(getUser(), playPins);
+}
+
+function playPins(levelId = currentPinLevelId(getUser())) {
+  stopGames();
+  show('pins');
+  arcadeGame = new PinsGame({
+    canvas: document.getElementById('pins-canvas'),
+    hud: {
+      title: document.getElementById('pins-title'),
+      left: document.getElementById('pins-left'),
+      hint: document.getElementById('pins-hint'),
+    },
+    level: getPinLevel(levelId),
+    onEnd: (result) => {
+      arcadeGame = null;
+      show('pins-result');
+      showPinsResult(result);
+    },
+  });
+  requestAnimationFrame(() => arcadeGame?.start());
+}
+
+// ---------- Jöle Solucan ----------
+
+function goWormLobby() {
+  stopGames();
+  show('worm-lobby');
+  renderWormLobby(getUser());
+}
+
+function playWorm() {
+  stopGames();
+  show('worm');
+  arcadeGame = new WormGame({
+    canvas: document.getElementById('worm-canvas'),
+    hud: {
+      time: document.getElementById('worm-time'),
+      length: document.getElementById('worm-length'),
+      rank: document.getElementById('worm-rank'),
+      board: document.getElementById('worm-board'),
+      boost: document.getElementById('worm-boost'),
+      powers: document.getElementById('worm-powers'),
+      hint: document.getElementById('worm-hint'),
+    },
+    skin: selectedSkin(),
+    playerName: getUser()?.username ?? 'Sen',
+    seed: randomSeed(),
+    onEnd: (result) => {
+      arcadeGame = null;
+      show('worm-result');
+      showWormResult(result);
+    },
+  });
+  requestAnimationFrame(() => arcadeGame?.start());
+}
+
 // ---------- Jöle Patlat ----------
 
 function matchHud() {
@@ -347,6 +416,21 @@ document.addEventListener('click', (e) => {
       break;
     case 'nakis-map':
       goNakisMap();
+      break;
+    case 'pins-map':
+      goPinsMap();
+      break;
+    case 'pins-play':
+      playPins(Number(btn.dataset.level) || undefined);
+      break;
+    case 'worm-lobby':
+      goWormLobby();
+      break;
+    case 'worm-play':
+      playWorm();
+      break;
+    case 'worm-quit':
+      if (window.confirm('Turu bırakırsan bu turun ödülü kazanılmaz. Çıkılsın mı?')) goWormLobby();
       break;
     case 'chests':
       stopGames();

@@ -105,6 +105,32 @@
         <button class="btn btn-primary" data-action="nakis-map">Nakış İşle</button>
       </article>
 
+      <article class="game-card game-card-pins">
+        <div class="game-art-wrap">
+          <canvas class="game-art" data-art="pins" data-action="pins-map" aria-hidden="true"></canvas>
+          <span class="game-card-tag">Can harcamaz</span>
+        </div>
+        <div class="game-card-head">
+          <h2>İğnedenlik</h2>
+          <p class="game-card-level" id="home-pins-level"></p>
+        </div>
+        <p>Dönen iğnedenliğe toplu iğneleri sapla, birbirine çarptırma! İpli bölümlerde ipi dolaştırma.</p>
+        <button class="btn btn-primary" data-action="pins-map">İğne Fırlat</button>
+      </article>
+
+      <article class="game-card game-card-worm">
+        <div class="game-art-wrap">
+          <canvas class="game-art" data-art="worm" data-action="worm-lobby" aria-hidden="true"></canvas>
+          <span class="game-card-tag">Can &amp; para kazan</span>
+        </div>
+        <div class="game-card-head">
+          <h2>Jöle Solucan</h2>
+          <p class="game-card-level" id="home-worm-best"></p>
+        </div>
+        <p>Şeker ye, büyü, tacı kap! Başını başka solucanlara çarpma. Güç şekerlerini kaçırma.</p>
+        <button class="btn btn-primary" data-action="worm-lobby">Arenaya Gir</button>
+      </article>
+
       <article class="game-card game-card-side">
         <div class="game-art-wrap">
           <canvas class="game-art game-art-short" data-art="match" data-action="hub" aria-hidden="true"></canvas>
@@ -269,6 +295,116 @@
       <p class="muted">Beklemek istemiyor musun? Jöle Patlat'ta <strong>1.500+ puan</strong> yap ya da bir bölüm geç, can kazan!</p>
       <button class="btn btn-primary" data-action="quick-play">Hızlı Tur oyna</button>
       <button class="btn btn-secondary" data-action="shop">🛒 Dükkândan can al</button>
+      <button class="btn btn-ghost" data-action="home">Ana Menü</button>
+    </section>
+
+    <!-- İğnedenlik: bölüm haritası -->
+    <section class="screen" data-screen="pins-map" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="home" aria-label="Ana menüye dön">‹</button>
+        <h2 class="title">İğnedenlik</h2>
+        <span class="stars-total">📍 <b id="pins-progress">0</b></span>
+      </header>
+      <p class="muted small">Ekrana dokun, iğne fırlasın. İğneler birbirine değerse bölüm biter. Sarı yaylı bölümlerde ipi dolaştırma! Her 5 bölümde bir 🔑 anahtar.</p>
+      <div id="pins-grid" class="nakis-grid"></div>
+    </section>
+
+    <!-- İğnedenlik: oyun -->
+    <section class="screen screen-game" data-screen="pins" hidden>
+      <header class="hud hud-shooter">
+        <button class="hud-quit" data-action="pins-map" aria-label="Bölümden çık">✕</button>
+        <div class="hud-box hud-title-box">
+          <strong id="pins-title" class="hud-title"></strong>
+        </div>
+        <div class="hud-box">
+          <span class="hud-label">İğne</span>
+          <strong id="pins-left" class="hud-value hud-value-small">0</strong>
+        </div>
+      </header>
+      <div class="board-wrap board-wrap-pins">
+        <canvas id="pins-canvas"></canvas>
+        <p id="pins-hint" class="game-hint"></p>
+      </div>
+    </section>
+
+    <!-- İğnedenlik: sonuç -->
+    <section class="screen screen-center" data-screen="pins-result" hidden>
+      <div id="pins-confetti" class="confetti-layer" aria-hidden="true"></div>
+      <h2 id="pr-title" class="title"></h2>
+      <canvas id="pr-art" class="gummy-preview" aria-hidden="true"></canvas>
+      <p id="pr-text" class="muted"></p>
+      <ul id="pr-rewards" class="rewards" hidden></ul>
+      <p id="pr-status" class="muted small"></p>
+      <button id="pr-next" class="btn btn-primary" data-action="pins-play">Sonraki Bölüm</button>
+      <button id="pr-retry" class="btn btn-primary" data-action="pins-play">Tekrar Dene</button>
+      <button class="btn btn-secondary" data-action="pins-map">Bölümler</button>
+      <button class="btn btn-ghost" data-action="home">Ana Menü</button>
+    </section>
+
+    <!-- Jöle Solucan: lobi -->
+    <section class="screen" data-screen="worm-lobby" hidden>
+      <header class="page-head">
+        <button class="btn-back" data-action="home" aria-label="Ana menüye dön">‹</button>
+        <h2 class="title">Jöle Solucan</h2>
+        <span class="stars-total">🏆 <b id="worm-best">0</b></span>
+      </header>
+      <canvas id="worm-preview" class="worm-preview" aria-hidden="true"></canvas>
+      <h3 class="subtitle">Solucanını seç</h3>
+      <div id="worm-skins" class="worm-skins"></div>
+      <div class="card worm-rules">
+        <p>🍬 Şeker ye, büyü. <b>3 dakika</b> sonunda en büyük solucan tacı alır 👑</p>
+        <p>💥 Başını başka bir solucanın gövdesine çarparsan tur biter.</p>
+        <p>⚡ Hızlanmak boyunu azaltır. Güç şekerleri: 🧲 Mıknatıs · 🛡️ Kalkan · ⚡ Turbo</p>
+        <p class="mode-reward">300+ boy = ❤️ +1 can · 700+ boy = ❤️ +2 can · taç = 🪙 +25</p>
+      </div>
+      <div class="lives-card card" data-lives>
+        <div class="hearts"></div>
+        <span class="lives-timer"></span>
+      </div>
+      <button class="btn btn-primary btn-huge" data-action="worm-play">OYNA</button>
+    </section>
+
+    <!-- Jöle Solucan: oyun -->
+    <section class="screen screen-game screen-worm" data-screen="worm" hidden>
+      <header class="hud hud-worm">
+        <button class="hud-quit" data-action="worm-quit" aria-label="Turu bırak">✕</button>
+        <div class="hud-box">
+          <span class="hud-label">Süre</span>
+          <strong id="worm-time" class="hud-value hud-value-small">3:00</strong>
+        </div>
+        <div class="hud-box hud-score-box">
+          <span class="hud-label">Boy</span>
+          <strong id="worm-length" class="hud-value hud-value-small">20</strong>
+        </div>
+        <div class="hud-box">
+          <span class="hud-label">Sıra</span>
+          <strong id="worm-rank" class="hud-value hud-value-small">1</strong>
+        </div>
+      </header>
+      <div class="board-wrap board-wrap-worm">
+        <canvas id="worm-canvas"></canvas>
+        <ol id="worm-board" class="worm-board" aria-label="Liderlik"></ol>
+        <p id="worm-powers" class="worm-powers"></p>
+        <button id="worm-boost" class="worm-boost" type="button" aria-label="Hızlan">⚡</button>
+        <p id="worm-hint" class="game-hint"></p>
+      </div>
+    </section>
+
+    <!-- Jöle Solucan: sonuç -->
+    <section class="screen screen-center" data-screen="worm-result" hidden>
+      <div id="worm-confetti" class="confetti-layer" aria-hidden="true"></div>
+      <h2 id="wr-title" class="title"></h2>
+      <div id="wr-badge" class="new-best" hidden>YENİ REKOR!</div>
+      <strong id="wr-score" class="big-score">0</strong>
+      <p class="best-line">En iyin: <strong id="wr-best">0</strong></p>
+      <div class="card stats-row">
+        <div><span>Sıra</span><strong id="wr-rank">-</strong></div>
+        <div><span>Yenilen solucan</span><strong id="wr-kills">0</strong></div>
+      </div>
+      <ul id="wr-rewards" class="rewards" hidden></ul>
+      <p id="wr-status" class="muted small"></p>
+      <button class="btn btn-primary" data-action="worm-play">Tekrar Oyna</button>
+      <button class="btn btn-secondary" data-action="worm-lobby">Solucanını değiştir</button>
       <button class="btn btn-ghost" data-action="home">Ana Menü</button>
     </section>
 

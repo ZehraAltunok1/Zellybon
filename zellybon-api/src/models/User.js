@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema({
     magnet: counter(STARTING_NAKIS_JOKERS.magnet),
   },
 
+  // İğnedenlik ve Jöle Solucan
+  pinLevel: { type: Number, default: 1 }, // açılmış en yüksek İğnedenlik bölümü
+  wormBest: { type: Number, default: 0 }, // Jöle Solucan rekoru (boy)
+
   // Jöle Patlat
   jokers: {
     hammer: counter(STARTING_JOKERS.hammer),
@@ -114,6 +118,8 @@ userSchema.methods.toPublic = function toPublic() {
       box: this.nakisJokers?.box ?? 0,
       magnet: this.nakisJokers?.magnet ?? 0,
     },
+    pinLevel: this.pinLevel ?? 1,
+    wormBest: this.wormBest ?? 0,
     lives: livesInfo(this),
     boosters: this.publicBoosters(),
     jokers: this.publicJokers(),

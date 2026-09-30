@@ -4,6 +4,8 @@
 import { renderGummy, renderCube } from '../shooter/shapes.js';
 import { renderHint, renderStitch, renderSpool, drawNeedle, strand } from '../nakis/renderer.js';
 import { PALETTE, rgba } from '../palette.js';
+import { drawCushion, drawPinHead, drawShaft } from '../pins/renderer.js';
+import { paintWorm } from './arcade.js';
 
 const TAU = Math.PI * 2;
 let raf = 0;
@@ -364,7 +366,98 @@ function drawMatch(g, w, h, t, dpr) {
   }
 }
 
-const ARTS = { main: drawMain, nakis: drawNakis, match: drawMatch };
+// ---------- İğnedenlik: dönen domates iğnedenlik, ipli iğneler, alttan fırlayan iğne ----------
+
+const PIN_ANGLES = [0.2, 0.95, 1.7, 2.6, 3.3, 4.1, 4.9, 5.6];
+const PIN_HEADS = ['w', 'r', 'y', 'b', 'w', 'g', 'p', 'o'];
+
+function drawPins(g, w, h, t) {
+  panel(g, w, h, '#F2A7B8', '#B8567A');
+  const u = h * 0.19;
+  const cx = w * 0.38;
+  const cy = h * 0.5;
+  const rot = t / 900;
+  const cycle = (t % 1800) / 1800;
+  const angles = [...PIN_ANGLES];
+  // çizgili ip: iğneleri sırayla bağlar
+  const head = (a) => [cx + Math.cos(a + rot) * 1.9 * u, cy + Math.sin(a + rot) * 1.9 * u];
+  for (const a of angles) {
+    const [hx, hy] = head(a);
+    drawShaft(g, cx + Math.cos(a + rot) * u * 0.7, cy + Math.sin(a + rot) * u * 0.7, hx, hy, Math.max(1.5, u * 0.06));
+  }
+  drawCushion(g, cx, cy, u, 'r', rot, t);
+  g.strokeStyle = '#FFF6E0';
+  g.lineWidth = 1.6;
+  g.beginPath();
+  angles.slice(1, 6).forEach((a, i) => {
+    const [x, y] = head(a);
+    if (i === 0) g.moveTo(x, y);
+    else g.lineTo(x, y);
+  });
+  g.stroke();
+  angles.forEach((a, i) => {
+    const [x, y] = head(a);
+    drawPinHead(g, x, y, u * 0.16, PIN_HEADS[i]);
+  });
+  // alttan fırlayan iğne
+  const fly = Math.min(1, cycle / 0.35);
+  const fy = h * 1.02 - (h * 1.02 - (cy + 1.9 * u)) * fly;
+  if (cycle < 0.35) {
+    drawShaft(g, cx, fy - u * 0.9, cx, fy - u * 0.16, Math.max(1.5, u * 0.06));
+    drawPinHead(g, cx, fy, u * 0.16, 'c', 7);
+  }
+  // sağda sırada bekleyen numaralı iğneler
+  const qx = w * 0.78;
+  for (let k = 0; k < 4; k++) {
+    const y = h * 0.2 + k * u * 0.6;
+    g.globalAlpha = 1 - k * 0.18;
+    drawShaft(g, qx - u * 0.9, y, qx - u * 0.2, y, Math.max(1.5, u * 0.06));
+    drawPinHead(g, qx, y, u * 0.22, ['c', 'e', 'y', 'm'][k], 7 - k);
+    g.globalAlpha = 1;
+  }
+  sparkle(g, w * 0.62, h * 0.18, 6, 0.5 + Math.sin(t / 250) * 0.4);
+  sparkle(g, w * 0.1, h * 0.82, 5, 0.5 + Math.sin(t / 300 + 2) * 0.4);
+}
+
+// ---------- Jöle Solucan: taçlı solucan, şekerler ----------
+
+function drawWorm(g, w, h, t) {
+  panel(g, w, h, '#6F93B8', '#31679A');
+  // arka plan petek noktaları
+  g.fillStyle = 'rgba(255,255,255,0.12)';
+  for (let y = 10; y < h; y += 18) {
+    for (let x = (y / 18) % 2 ? 9 : 0; x < w; x += 18) {
+      g.beginPath();
+      g.arc(x, y, 1.6, 0, TAU);
+      g.fill();
+    }
+  }
+  // parlayan şekerler
+  const colors = ['r', 'y', 'g', 'p', 'c', 'e', 'o', 'b'];
+  for (let i = 0; i < 16; i++) {
+    const x = ((i * 97 + 30) % 100) / 100 * w;
+    const y = ((i * 57 + 20) % 90) / 100 * h + 8;
+    const pal = PALETTE[colors[i % colors.length]];
+    const r = 3.5 + (i % 3) * 1.5 + Math.sin(t / 300 + i) * 0.6;
+    const glow = g.createRadialGradient(x, y, 0, x, y, r * 2.6);
+    glow.addColorStop(0, rgba(pal.light, 0.9));
+    glow.addColorStop(1, rgba(pal.base, 0));
+    g.fillStyle = glow;
+    g.beginPath();
+    g.arc(x, y, r * 2.6, 0, TAU);
+    g.fill();
+    g.fillStyle = pal.base;
+    g.beginPath();
+    g.arc(x, y, r, 0, TAU);
+    g.fill();
+  }
+  // küçük rakip solucan ve taçlı büyük solucan
+  paintWorm(g, { a: 'm', b: 'g' }, { x: w * 0.2, y: h * 0.3, len: 10, r: 7, t: t + 800, dir: Math.PI });
+  paintWorm(g, { a: 'o', b: 'y' }, { x: w * 0.8, y: h * 0.6, len: 20, r: h * 0.085, t, crown: true });
+  sparkle(g, w * 0.55, h * 0.15, 6, 0.5 + Math.sin(t / 250) * 0.4);
+}
+
+const ARTS = { main: drawMain, nakis: drawNakis, match: drawMatch, pins: drawPins, worm: drawWorm };
 
 function paint(canvas, time) {
   const draw = ARTS[canvas.dataset.art];
